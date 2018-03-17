@@ -19,6 +19,9 @@ void keyboardDown(unsigned char key, int x, int y);
 
 chip8 testChip8;
 
+
+// Chip8 Graphics Setup Calls
+
 void setupGraphics(int argc, char **argv)
 {
 	// Setup OpenGL
@@ -44,9 +47,27 @@ void setupInputs()
 	glutKeyboardUpFunc(keyboardUp);
 }
 
+// GLUT Callbacks
+
 void display()
 {
-	// SDL drawing goes here...
+	// emulate one cycle for the Chip8
+	testChip8.emulateCycle();
+}
+
+void reshape_window(GLsizei h, GLsizei w)
+{
+
+}
+
+void keyboardDown(unsigned char key, int x, int y)
+{
+
+}
+
+void keyboardUp(unsigned char key, int x, int y)
+{
+
 }
 
 int main(int argc, char **argv)
@@ -68,22 +89,6 @@ int main(int argc, char **argv)
 	}
 
 	glutMainLoop();
-
-	//// emulation loop
-	//for (;;)
-	//{
-	//	// one cycle
-	//	testChip8.emulateCycle();
-
-	//	// if drawFlag set, update the screen
-	//	if (testChip8.drawFlag)
-	//	{
-	//		drawGraphics();
-	//	}
-
-	//	// store the key press state (press and release)
-	//	testChip8.setKeys();
-	//}
 
 	return 0;
 }
