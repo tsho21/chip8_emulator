@@ -87,11 +87,12 @@ void chip8::emulateCycle()
 	{
 		// execute opcodes
 
-	case 0xA00:                 // ANNN:  Sets I to the address NNN
+	// set the index address 'I'
+	case 0xA000: {              // ANNN:  Sets I to the address NNN
 		I = opcode & 0x0FFF;    // - set I to the NNN part of the opcode
 		pc += 2;                // - move the program counter by 2 for next opcode
 		break;
-
+	}
 		// TODO:  more opcodes
 		// try getting a function pointer map going where each opcode is 
 		//   mapped to its specific execute function
@@ -104,6 +105,49 @@ void chip8::emulateCycle()
 		//        2. Get execute function based on decode result
 		//          - note: there should be 255 execute functions for each opcode that exists?
 		//        3. Call the execute function with the remaining data from the opcode
+
+	// jump to function call
+	case 0x2000: {
+		stack[sp] = pc;    // store the current pc in the stack
+		++sp;			   // increase the stack pointer to next avail location
+		pc = opcode + 0x0FFF;	// set the pc to the address specified in the opcode (NNN part of 0x2NNN)
+		break;
+	}
+
+	// draw a pixel on screen
+	case 0xD000: {
+		unsigned short x = V[(opcode & 0x0F00) >> 8];
+		unsigned short y = V[(opcode & 0x00F0) >> 4];
+		unsigned short height = opcode & 0x000F;
+		unsigned short pixel;
+
+		// reset register VF (this is the drawFlag and pixel collision register - status register)
+		V[0xF] = 0;
+
+		// loop through the height of the pixel
+		for (int yline = 0; yline < height; ++yline) {
+			
+			// get the pixel to be drawn from memory - pixel will be at 'I', but need to get the full height of it via 'height'
+			pixel = memory[I + yline];
+
+			// scan through the bits of the pixel obtained from memory (8 bits - use 0x10000000, or 0x80, and shift right to check)
+			for (int xline = 0; xline < 8; ++xline) {
+
+				// check if the bit is set to '1'
+				if (pixel & (0x80 >> xline) != 0) {
+
+					// check the location to be drawn on screen for any current pixel being displayed
+					// current pixel on screen is at the location specified by x and y in the V registers and accounting for the height of the pixel
+					if (gfx[(x + xline) + ((y + yline) * 64)] == 1) {
+						// if the pixel bit is '1' and the same gfx bit is '1', we have a pixel collision, set the VF register
+						V[0xF] = 1;
+					}
+					// now XOR '1' with the gfx register to get the final pixel value to draw (on or off)
+					gfx[(x + xline) + ((y + yline) * 64)] ^= 1;
+				}
+			}
+		}
+	}
 
 	default:
 		debug_fmt_msg("Uknown opcode: 0x%X\n", opcode);

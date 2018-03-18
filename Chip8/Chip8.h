@@ -15,7 +15,7 @@ public:
 	//  
 	unsigned char memory[4096];
 
-	// registers
+	// registers  - V[0xF] or V[15] seems to be contextual -> if set after drawing opcode (0xDXYN), it indicates a bit collission
 	unsigned char V[16];
 
 	// index (I) and program counter (pc)
