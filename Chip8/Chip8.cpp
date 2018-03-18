@@ -114,7 +114,7 @@ void chip8::emulateCycle()
 		break;
 	}
 
-	// draw a pixel on screen
+	// draw a sprite on screen (sprite = 8 pixels wide, (opcode & 0x000F) pixels high)
 	case 0xD000: {
 		unsigned short x = V[(opcode & 0x0F00) >> 8];
 		unsigned short y = V[(opcode & 0x00F0) >> 4];
@@ -131,7 +131,7 @@ void chip8::emulateCycle()
 			pixel = memory[I + yline];
 
 			// scan through the bits of the pixel obtained from memory (8 bits - use 0x10000000, or 0x80, and shift right to check)
-			for (int xline = 0; xline < 8; ++xline) {
+			for (int xline = 0; xline < SPRITE_WIDTH; ++xline) {
 
 				// check if the bit is set to '1'
 				if (pixel & (0x80 >> xline) != 0) {

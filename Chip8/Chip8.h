@@ -9,6 +9,9 @@ public:
 	// memory size
 	static unsigned const short MEMORY_SIZE = 4096;
 
+	// sprite width = 8 pixels, each pixel is 1 bit (on=1, off=0)
+	static unsigned const short SPRITE_WIDTH = 8;
+
 	// memory
 	//  0x00 -> 0x50 = font set
 	//  0x200 = start of program memory
