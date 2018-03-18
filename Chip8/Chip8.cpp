@@ -119,30 +119,35 @@ void chip8::emulateCycle()
 		unsigned short x = V[(opcode & 0x0F00) >> 8];
 		unsigned short y = V[(opcode & 0x00F0) >> 4];
 		unsigned short height = opcode & 0x000F;
-		unsigned short pixel;
+		unsigned short sprite_pixel;
 
 		// reset register VF (this is the drawFlag and pixel collision register - status register)
 		V[0xF] = 0;
 
-		// loop through the height of the pixel
+		// loop through the height of the sprite
 		for (int yline = 0; yline < height; ++yline) {
 			
-			// get the pixel to be drawn from memory - pixel will be at 'I', but need to get the full height of it via 'height'
-			pixel = memory[I + yline];
+			// get the sprite to be drawn from memory - sprite will be at 'I', but need to scan through the entire height
+			sprite_pixel = memory[I + yline];
 
-			// scan through the bits of the pixel obtained from memory (8 bits - use 0x10000000, or 0x80, and shift right to check)
+			// scan through the bits of the sprite pixel obtained from memory (8 bits - use 0x10000000, or 0x80, and shift right to check)
 			for (int xline = 0; xline < SPRITE_WIDTH; ++xline) {
 
-				// check if the bit is set to '1'
-				if (pixel & (0x80 >> xline) != 0) {
+				// check if the bit is set to '1' - if it's 0, we don't bother changing anything in memory now
+				if (sprite_pixel & (0x80 >> xline) != 0) {
 
 					// check the location to be drawn on screen for any current pixel being displayed
-					// current pixel on screen is at the location specified by x and y in the V registers and accounting for the height of the pixel
+					// match a current screen (gfx[]) pixel by:
+					//   1. start at x and y given by the V registers
+					//   2. go through bit by bit across the sprite
+					//   3. also go through the height of the pixel by using yline (height of to be drawn pixel) and moving 64 across (using a single dimensional array)
 					if (gfx[(x + xline) + ((y + yline) * 64)] == 1) {
 						// if the pixel bit is '1' and the same gfx bit is '1', we have a pixel collision, set the VF register
 						V[0xF] = 1;
 					}
 					// now XOR '1' with the gfx register to get the final pixel value to draw (on or off)
+					//   this effectively makes the screen pixel '1' or on if it was '0' of off
+					//   OR we make it '0' if it was '1' because we had a pixel collision
 					gfx[(x + xline) + ((y + yline) * 64)] ^= 1;
 				}
 			}
