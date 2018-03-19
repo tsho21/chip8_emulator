@@ -87,6 +87,38 @@ void chip8::emulateCycle()
 	{
 		// execute opcodes
 
+	// opcode 0x0NNN -> Calls RCA 1802 program at address NNN. Not necessary for most ROMs.
+	// opcode 0x00E0 -> Clears the screen
+	// opcode 0x00EE -> Returns from a subroutine
+	case 0x0000: {
+		switch (opcode & 0x0FFF) {
+			case 0x00E0: {
+				// clear the screen
+				for (int i = 0; i < (64 * 32); ++i) {
+					gfx[i] = 0x0;
+				}
+				drawFlag = true;
+				pc += 2;
+				break;
+			}
+			case 0x00EE: {
+				// pop the stack and return to where the pc pointer was
+				--sp;
+				pc = stack[sp];  // return to the point of function call
+				pc += 2;    // increase the pc to the next instruction after the function call
+				break;
+			}
+
+			// opcode 0x0NNN case -> this is probably not necessary
+			default: {
+				stack[sp] = pc;  // store the current pc on the stack
+				++sp;			 // increment stack pointer
+				pc = (opcode & 0x0FFF);  // set the pc to the address specified in the opcode (NNN part of 0x0NNN)
+				break;
+			}
+		}
+	}
+
 	// set the index address 'I'
 	case 0xA000: {              // ANNN:  Sets I to the address NNN
 		I = opcode & 0x0FFF;    // - set I to the NNN part of the opcode
@@ -106,15 +138,15 @@ void chip8::emulateCycle()
 		//          - note: there should be 255 execute functions for each opcode that exists?
 		//        3. Call the execute function with the remaining data from the opcode
 
-	// jump to function call
+	// opcodes 0x2NNN -> call subroutine (subroutine will return)
 	case 0x2000: {
 		stack[sp] = pc;    // store the current pc in the stack
 		++sp;			   // increase the stack pointer to next avail location
-		pc = opcode + 0x0FFF;	// set the pc to the address specified in the opcode (NNN part of 0x2NNN)
+		pc = opcode & 0x0FFF;	// set the pc to the address specified in the opcode (NNN part of 0x2NNN)
 		break;
 	}
 
-	// draw a sprite on screen (sprite = 8 pixels wide, (opcode & 0x000F) pixels high)
+	// opcodes 0xDXYN -> draw a sprite on screen (sprite = 8 pixels wide, (opcode & 0x000F) pixels high)
 	case 0xD000: {
 		unsigned short x = V[(opcode & 0x0F00) >> 8];
 		unsigned short y = V[(opcode & 0x00F0) >> 4];
@@ -153,6 +185,15 @@ void chip8::emulateCycle()
 			}
 		}
 	}
+
+	// opcodes 0x1NNN -> jump to address specified in 'NNN' 
+	case 0x1000: {
+		pc = (opcode & 0x0FFF); 
+		break;
+	}
+
+
+
 
 	default:
 		debug_fmt_msg("Uknown opcode: 0x%X\n", opcode);
