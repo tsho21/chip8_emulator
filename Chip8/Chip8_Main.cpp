@@ -136,7 +136,7 @@ int main(int argc, char **argv)
 
 	// load the game into memory
 	// TODO:  Make this selectable vai a UI
-	if (!testChip8.loadGame("pong"))
+	if (!testChip8.loadApp("pong"))
 	{
 		testChip8.debug_simple_msg("Error reading the file provided!");
 	}

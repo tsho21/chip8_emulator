@@ -116,6 +116,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="Chip8.h" />
+    <ClInclude Include="Debug.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Chip8.cpp" />

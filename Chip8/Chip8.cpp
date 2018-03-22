@@ -1,6 +1,7 @@
 #include "stdio.h"  // debug and loader only
 #include "stdlib.h"
 #include "Chip8.h" 
+#include "Debug.h"
 
 chip8::chip8()
 {
@@ -195,8 +196,10 @@ void chip8::emulateCycle()
 
 
 
-	default:
-		debug_fmt_msg("Uknown opcode: 0x%X\n", opcode);
+	default: {
+		char msg[] = "Unknown opcode: 0x%X";
+		debug_fmt_msg(msg, opcode);
+	}
 	}
 
 	// update timers
@@ -209,25 +212,25 @@ void chip8::emulateCycle()
 	{
 		if (sound_timer == 1)
 		{
-			debug_simple_msg("BEEP!\n");
+			debug_simple_msg("BEEP!");
 			--sound_timer;
 		}
 	}
 }
 
-bool chip8::loadGame(char *filename)
+bool chip8::loadApp(char *filename)
 {
 	// initialize chip8
 	initialize();
 
-	debug_fmt_msg("Loading filename: %s\n", filename);
+	debug_fmt_msg("Loading filename: %s", filename);
 
 	// open file for reaching in binary mode (do not map end of line)
 	FILE *ptrFile = NULL;
 	fopen_s(&ptrFile, filename, "rb");
 	if (ptrFile == NULL)
 	{
-		fputs("File does not exist!", stderr);
+		debug_fmt_msg("Filename %s does not exist!", filename);
 		return false;
 	}
 
@@ -235,13 +238,13 @@ bool chip8::loadGame(char *filename)
 	fseek(ptrFile, 0, SEEK_END);
 	long bufferSize = ftell(ptrFile);
 	rewind(ptrFile);
-	debug_fmt_msg("Filesize found to be: %d\n", bufferSize);
+	debug_fmt_msg("Filesize found to be: %d", bufferSize);
 
 	// buffer should have 'bufferSize' number of bytes for the system
 	char *buffer = (char*)malloc(sizeof(char) * bufferSize);
 	if (buffer == NULL)
 	{
-		fputs("Memory allocation error", stderr);
+		debug_simple_msg("Memory allocation error!");
 	}
 
 	// program or game is loaded into memory starting at location 0x200 (512 in decimal)
@@ -259,12 +262,17 @@ void chip8::setKeys()
 
 void chip8::debug_simple_msg(char *message)
 {
-	printf(message);
+	DBOUT(message);
+	DBOUT("\n");
 }
 
 template <typename T>
-void chip8::debug_fmt_msg(char *formatted_message, T object)
+void chip8::debug_fmt_msg(char formatted_message[], T object)
 {
-	printf(formatted_message, object);
+	const size_t buf_size = ((sizeof(formatted_message) / sizeof(char)) * sizeof(formatted_message)) * 2;
+	char buffer[buf_size];
+	sprintf_s(buffer, formatted_message, object);
+	DBOUT(buffer);
+	DBOUT("\n");
 }
 

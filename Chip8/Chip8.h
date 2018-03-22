@@ -71,10 +71,10 @@ public:
 
 	void initialize();
 	void emulateCycle();
-	bool loadGame(char *filename);
+	bool loadApp(char *filename);
 	void setKeys();
 
 	template <typename T>
-	void debug_fmt_msg(char *formatted_message, T values);
+	void debug_fmt_msg(char formatted_message[], T values);
 	void debug_simple_msg(char *message);
 };
