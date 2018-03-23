@@ -3,6 +3,19 @@
 #include "Chip8.h" 
 #include "Debug.h"
 
+// TODO:  more opcodes
+// try getting a function pointer map going where each opcode is 
+//   mapped to its specific execute function
+// decoding may still need to be done via the switch statement here to get 
+//   the proper key for the map and then call the execute function with the 
+//   rest of the opcode data.
+//
+//  Example flow:
+//        1. Decode opcode with switch
+//        2. Get execute function based on decode result
+//          - note: there should be 255 execute functions for each opcode that exists?
+//        3. Call the execute function with the remaining data from the opcode
+
 chip8::chip8()
 {
 	// empty constructor
@@ -91,9 +104,9 @@ void chip8::emulateCycle()
 	// opcode 0x0NNN -> Calls RCA 1802 program at address NNN. Not necessary for most ROMs.
 	// opcode 0x00E0 -> Clears the screen
 	// opcode 0x00EE -> Returns from a subroutine
-	case 0x0000: {
+	case 0x0000: 
 		switch (opcode & 0x0FFF) {
-			case 0x00E0: {
+			case 0x00E0: 
 				// clear the screen
 				for (int i = 0; i < (64 * 32); ++i) {
 					gfx[i] = 0x0;
@@ -101,54 +114,152 @@ void chip8::emulateCycle()
 				drawFlag = true;
 				pc += 2;
 				break;
-			}
-			case 0x00EE: {
+			
+			case 0x00EE: 
 				// pop the stack and return to where the pc pointer was
 				--sp;
 				pc = stack[sp];  // return to the point of function call
 				pc += 2;    // increase the pc to the next instruction after the function call
 				break;
-			}
+			
 
 			// opcode 0x0NNN case -> this is probably not necessary
-			default: {
+			default: 
 				stack[sp] = pc;  // store the current pc on the stack
 				++sp;			 // increment stack pointer
 				pc = (opcode & 0x0FFF);  // set the pc to the address specified in the opcode (NNN part of 0x0NNN)
 				break;
-			}
 		}
-	}
-
-	// set the index address 'I'
-	case 0xA000: {              // ANNN:  Sets I to the address NNN
-		I = opcode & 0x0FFF;    // - set I to the NNN part of the opcode
-		pc += 2;                // - move the program counter by 2 for next opcode
 		break;
-	}
-		// TODO:  more opcodes
-		// try getting a function pointer map going where each opcode is 
-		//   mapped to its specific execute function
-		// decoding may still need to be done via the switch statement here to get 
-		//   the proper key for the map and then call the execute function with the 
-		//   rest of the opcode data.
-		//
-		//  Example flow:
-		//        1. Decode opcode with switch
-		//        2. Get execute function based on decode result
-		//          - note: there should be 255 execute functions for each opcode that exists?
-		//        3. Call the execute function with the remaining data from the opcode
+
+	// opcodes 0x1NNN -> jump to address specified in 'NNN' 
+	case 0x1000: 
+		pc = (opcode & 0x0FFF);
+		break;
+	
 
 	// opcodes 0x2NNN -> call subroutine (subroutine will return)
-	case 0x2000: {
+	case 0x2000: 
 		stack[sp] = pc;    // store the current pc in the stack
 		++sp;			   // increase the stack pointer to next avail location
 		pc = opcode & 0x0FFF;	// set the pc to the address specified in the opcode (NNN part of 0x2NNN)
 		break;
-	}
+	
+
+	// opcode 0x3XNN -> Skip the next instruction if VX equals NN
+	case 0x3000: 
+		if ((V[(opcode & 0x0F00) >> 8] == (opcode & 0x00FF))) {
+			pc += 4;   // skip the next instruction 
+		}
+		else {
+			pc += 2;   // otherwise, just go to the next instruction
+		}
+		break;
+	
+
+	// opcode 0x4XNN -> Skips the next instruction if VX doesn't equal NN.
+	case 0x4000: 
+		if ((V[(opcode & 0x0F00) >> 8] != (opcode & 0x00FF))) {
+			pc += 4;  // skip the next instruction
+		}
+		else {
+			pc += 2;  // otherwise, just go to the next instruction
+		}
+		break;
+		
+	// opcode 0x5XY0 -> Skips the next instruction if VX equals VY. 
+	case 0x5000:
+		if (V[(opcode & 0x0F00) >> 8] == V[(opcode & 0x00F0) >> 4]) {
+			pc += 4;  // skip the next instruction
+		}
+		else {
+			pc += 2;  // otherwise, just go to the next instruction
+		}
+		break;
+
+	// opcode 0x6XNN -> Sets VX to NN.
+	case 0x6000:
+		V[(opcode & 0x0F00) >> 8] = (opcode & 0x00FF);
+		pc += 2; 
+		break;
+
+
+	// opcode 0x7XNN -> Adds NN to VX. (Carry flag is not changed)
+	case 0x7000:
+		V[(opcode & 0x0F00) >> 8] += (opcode & 0x00FF);
+		pc += 2;
+
+	// opcodes 0x8XY? -> Last bit determines the operation
+	case 0x0800:
+		switch (opcode & 0x000F) {
+
+		// opcode 0x8XY0 -> Sets VX to the value of VY
+		case 0x0000:
+			V[(opcode & 0x0F00) >> 8] = V[(opcode & 0x00F0) >> 4];
+			pc += 2;
+			break;
+
+		// opcode 0x8XY1 -> Sets VX to VX or VY (Bitwise OR operation)
+		case 0x0001:
+			V[(opcode & 0x0F00) >> 8] |= V[(opcode & 0x00F0) >> 4];
+			pc += 2;
+			break;
+
+		// opcode 0x8XY2 -> Sets VX to VX and VY. (Bitwise AND operation)
+		case 0x0002: 
+			V[(opcode & 0x0F00) >> 8] &= V[(opcode & 0x00F0) >> 4];
+			pc += 2;
+			break;
+
+		// opcode 0x8XY3 -> Sets VX to VX xor VY.
+		case 0x0003:
+			V[(opcode & 0x0F00) >> 8] ^= V[(opcode & 0x00F0) >> 4];
+			pc += 2;
+			break;
+
+		// opcode 0x8XY4 -> Adds VY to VX. VF is set to 1 when there's a carry, and to 0 when there isn't
+		case 0x0004:
+			// we figure out how much of 0xFF is left when subtracting what is already in V[X]
+			//   then if what is going to be added in V[Y] to that is more, then adding V[Y] to V[X] will cause overflow
+			//  
+			//   Example:
+			//          Will 4 + 3 overflow 9?  ->  (9 - 4) = 5.   3 being added is not > 5, so no
+			//          Will 4 + 7 overflow 9?  ->  (9 - 4) = 5.   7 being added is > 5, so yes
+			if (V[(opcode & 0x00F0) >> 4] > (0xFF - V[(opcode & 0x0F00) >> 8])) {
+				V[0xF] = 1;  // set carry flag
+			}
+			else {
+				V[0xF] = 0; 
+			}
+			V[(opcode & 0x0F00) >> 8] += V[(opcode & 0x00F0) >> 4];    // now do the addition
+			pc += 2;
+			break;
+
+		// opcode 0x8XY5 -> VY is subtracted from VX. VF is set to 0 when there's a borrow, and 1 when there isn't.
+		case 0x0005:
+			// it is easier than above to figure out if we'll need to borrow
+			//  we just need to determine if VY is bigger than VX - if it is, VX will go below 0 and need to borrow
+			if (V[(opcode & 0x00F0) >> 4] > V[(opcode & 0x0F00) >> 8]) {
+				V[0xF] = 1;  // set borrow flag
+			}
+			else {
+				V[0xF] = 0; 
+			}
+			V[(opcode & 0x0F00) >> 8] -= V[(opcode & 0x00F0) >> 4];    // now do the subtraction
+			pc += 2;
+			break;
+
+		}
+
+	// set the index address 'I'
+	case 0xA000:                // ANNN:  Sets I to the address NNN
+		I = opcode & 0x0FFF;    // - set I to the NNN part of the opcode
+		pc += 2;                // - move the program counter by 2 for next opcode
+		break;
+
 
 	// opcodes 0xDXYN -> draw a sprite on screen (sprite = 8 pixels wide, (opcode & 0x000F) pixels high)
-	case 0xD000: {
+	case 0xD000: 
 		unsigned short x = V[(opcode & 0x0F00) >> 8];
 		unsigned short y = V[(opcode & 0x00F0) >> 4];
 		unsigned short height = opcode & 0x000F;
@@ -185,21 +296,15 @@ void chip8::emulateCycle()
 				}
 			}
 		}
-	}
-
-	// opcodes 0x1NNN -> jump to address specified in 'NNN' 
-	case 0x1000: {
-		pc = (opcode & 0x0FFF); 
+		drawFlag = true;
+		pc += 2; 
 		break;
-	}
+	
 
-
-
-
-	default: {
+	default: 
 		char msg[] = "Unknown opcode: 0x%X";
 		debug_fmt_msg(msg, opcode);
-	}
+		break;
 	}
 
 	// update timers
