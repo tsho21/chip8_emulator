@@ -249,6 +249,32 @@ void chip8::emulateCycle()
 			pc += 2;
 			break;
 
+		// opcode 0x8XY6 -> Shifts VY right by one and copies the result to VX. 
+		//					VF is set to the value of the least significant bit of VY before the shift
+		case 0x0006:
+			V[0xF] = V[(opcode & 0x00F0) >> 4] & 0x0001;
+			V[(opcode & 0x0F00) >> 8] = (V[(opcode & 0x00F0) >> 4] >>= 1);
+			pc += 2;
+			break;
+
+		// opcode 0x8XY7 -> Sets VX to VY minus VX. VF is set to 0 when there's a borrow, and 1 when there isn't.
+		case 0x0007:
+			// if we're subtracting VX from VY, if VX is larger than VY, there will be a borrow
+			if (V[(opcode & 0x0F00) >> 8] > V[(opcode & 0x00F0) >> 4]) {
+				V[0xF] = 0;
+			}
+			else {
+				V[0xF] = 1;
+			}
+			V[(opcode & 0x0F00) >> 8] = V[(opcode & 0x00F0) >> 4] - V[(opcode & 0x0F00) >> 8];
+			pc += 2;
+			break;
+
+		// opcode 0x8XYE -> Shifts VY left by one and copies the result to VX. 
+		//					VF is set to the value of the most significant bit of VY before the shift
+		case 0x000E:
+
+
 		}
 
 	// set the index address 'I'
