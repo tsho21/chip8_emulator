@@ -252,7 +252,7 @@ void chip8::emulateCycle()
 		// opcode 0x8XY6 -> Shifts VY right by one and copies the result to VX. 
 		//					VF is set to the value of the least significant bit of VY before the shift
 		case 0x0006:
-			V[0xF] = V[(opcode & 0x00F0) >> 4] & 0x0001;
+			V[0xF] = V[(opcode & 0x00F0) >> 4] & 0x01;
 			V[(opcode & 0x0F00) >> 8] = (V[(opcode & 0x00F0) >> 4] >>= 1);
 			pc += 2;
 			break;
@@ -273,9 +273,25 @@ void chip8::emulateCycle()
 		// opcode 0x8XYE -> Shifts VY left by one and copies the result to VX. 
 		//					VF is set to the value of the most significant bit of VY before the shift
 		case 0x000E:
-
-
+			V[0xF] = V[(opcode & 0x00F0) >> 4] & 0x80;   // msb = 0b10000000 = 0x80
+			V[(opcode & 0x0F00) >> 8] = (V[(opcode & 0x00F0) >> 4] <<= 1);
+			pc += 2;
+			break;
 		}
+		
+	// opcode 0x9XY0 -> Skips the next instruction if VX doesn't equal VY.
+	case 0x9000:
+		if (V[(opcode & 0x0F00) >> 8] != V[(opcode & 0x00F0) >> 4]) {
+			pc += 4;  // skip next instruction
+		}
+		else {
+			pc += 2;
+		}
+		break;
+
+
+
+
 
 	// set the index address 'I'
 	case 0xA000:                // ANNN:  Sets I to the address NNN
