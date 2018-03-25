@@ -273,7 +273,14 @@ void chip8::emulateCycle()
 			V[(opcode & 0x0F00) >> 8] = (V[(opcode & 0x00F0) >> 4] <<= 1);
 			pc += 2;
 			break;
+
+		default:
+			char msg[] = "Unknown opcode %X";
+			debug_fmt_msg(msg, opcode);
+			debug_simple_msg("Bad program - exiting!");
+			exit(1);
 		}
+
 		
 	// opcode 0x9XY0 -> Skips the next instruction if VX doesn't equal VY.
 	case 0x9000:
@@ -350,8 +357,133 @@ void chip8::emulateCycle()
 			
 		// opcode 0xEX9E -> Skips the next instruction if the key stored in VX is pressed.
 		case 0x009E:
-			if (key[)
+			unsigned short store_key = V[(opcode & 0x0F00) >> 8];
+			if (store_key <= 0xF) {
+				if (key[store_key] == 1) {
+					pc += 4;
+				}
+				else {
+					pc += 2;
+				}
+			}
+			else {
+				char msg[] = "Key stored in V[%i] is outside of the hex bounds.";
+				debug_fmt_msg(msg, store_key);
+				debug_simple_msg("Illegal reference attempted on key[] array!");
+				exit(0);
+			}
+			break;
+
+		// opcode 0xEXA1 -> Skips the next instruction if the key stored in VX isn't pressed.
+		case 0x00A1:
+			unsigned short store_key = V[(opcode & 0x0F00) >> 8];
+			if (store_key <= 0xF) {
+				if (key[store_key] == 0) {
+					pc += 4;
+				}
+				else {
+					pc += 2;
+				}
+			}
+			else {
+				char msg[] = "Key stored in V[%i] is outside of the hex bounds.";
+				debug_fmt_msg(msg, store_key);
+				debug_simple_msg("Illegal reference attempted on key[] array!");
+				exit(1);
+			}
+			break;
+
+		default:
+			char msg[] = "Unknown opcode %X";
+			debug_fmt_msg(msg, opcode);
+			debug_simple_msg("Bad program - exiting!");
+			exit(1);
 		}
+
+	// opcodes 0xFX?? -> Last byte determines operation
+	case 0xF000:
+		switch (opcode & 0x00FF) {
+
+		// opcode 0xFX07 -> Sets VX to the value of the delay timer.
+		case 0x0007:
+			V[(opcode & 0x0F00) >> 8] = delay_timer;
+			pc += 2;
+			break;
+
+		// opcode 0xFX0A -> A key press is awaited, and then stored in VX. 
+		//					(Blocking Operation. All instruction halted until next key event)
+		case 0x000A:
+			bool isKeyPressed = false;
+			for (int i = 0; i < 16; ++i) {
+				if (key[i] == 1) {
+					isKeyPressed = true;
+					V[(opcode & 0x0F00) >> 8] = i;
+					break;
+				}
+			}
+			if (!isKeyPressed) {
+				return;  // skip the rest of the emulation cycle and try again (wait on the key)
+			}
+			pc += 2;
+			break;
+
+		// opcode 0xFX15 -> Sets the delay timer to VX.	
+		case 0x0015:
+			delay_timer = V[(opcode & 0x0F00) >> 8];
+			pc += 2;
+			break;
+
+		// opcode 0xFX18 -> Sets the sound timer to VX.
+		case 0x0018: 
+			sound_timer = V[(opcode & 0x0F00) >> 8];
+			pc += 2;
+			break;
+
+		// opcode 0xFX1E -> Adds VX to I.
+		//
+		// Per Wikipedia footnote (3)
+		// VF is set to 1 when there is a range overflow (I+VX>0xFFF), and to 0 when there isn't. 
+		// This is an undocumented feature of the CHIP-8 and used by the Spacefight 2091! game.
+		case 0x001E:
+			if ((I + V[(opcode & 0x0F00) >> 8]) > 0xFFF) {
+				V[0xF] = 1;
+			}
+			else {
+				V[0xF] = 0;
+			}
+			I += V[(opcode & 0x0F00) >> 8];  // now just add them and store in I
+			pc += 2;
+			break;
+
+		// opcode 0xFX29 -> Sets I to the location of the sprite for the character in VX. 
+		//                  Characters 0-F (in hexadecimal) are represented by a 4x5 font.
+		case 0x0029:
+			// get the character from V[(opcode & 0x0F00) >> 8]
+			// we need to get the sprite data for this from the fontset memory
+			// each character is 5 bytes wide (4x5)
+
+			// implementation of this is multiple what V[X] points to by 5 (0 * 5 = 0, 1 * 5 = 5, 2 * 5 = 10, etc...)
+			//  this will skip ahead the correct number of locations (bytes) in the fontset array to the start of the correct hex character
+			I = V[(opcode & 0x0F00) >> 8] * 0x5;
+			pc += 2;
+			break;
+
+		// opcode 0xFX33 -> Stores the binary-coded decimal representation of VX, 
+		//                  with the most significant of three digits at the address in I, 
+		//                  the middle digit at I plus 1, and the least significant digit at I plus 2. 
+		//                  (In other words, take the decimal representation of VX, 
+		//                    place the hundreds digit in memory at location in I, the tens digit at location I+1, 
+		//                    and the ones digit at location I+2.)
+		case 0x0033:
+
+
+		default:
+			char msg[] = "Unknown opcode %X";
+			debug_fmt_msg(msg, opcode);
+			debug_simple_msg("Bad program - exiting!");
+			exit(1);
+		}
+
 
 
 	default: 

@@ -44,7 +44,7 @@ void setupGraphics(int argc, char **argv)
 
 void setupInputs()
 {
-	// OpenGL Inputs
+	// OpenGL Inputs - call functions when key is pressed or released
 	glutKeyboardFunc(keyboardDown);
 	glutKeyboardUpFunc(keyboardUp);
 }
@@ -58,7 +58,7 @@ void display()
 
 	// check the drawFlag to determine if we need to draw anything
 	if (testChip8.drawFlag) {
-		
+
 		// draw routine
 
 		// clear the screen
@@ -80,14 +80,116 @@ void reshape_window(GLsizei h, GLsizei w)
 
 }
 
+// set the keys based on the key pressed
 void keyboardDown(unsigned char key, int x, int y)
 {
-
+	// exit = esc key = 27
+	if (key == 27) {
+		testChip8.debug_simple_msg("ESC key pressed - exiting program!");
+		exit(0);
+	}
+	
+	if (key == KEY_0) {
+		testChip8.key[0x0] = 1;
+	}
+	else if (key == KEY_1) {
+		testChip8.key[0x1] = 1;
+	}
+	else if (key == KEY_2) {
+		testChip8.key[0x2] = 1;
+	}
+	else if (key == KEY_3) {
+		testChip8.key[0x3] = 1;
+	}
+	else if (key == KEY_4) {
+		testChip8.key[0x4] = 1;
+	}
+	else if (key == KEY_5) {
+		testChip8.key[0x5] = 1;
+	}
+	else if (key == KEY_6) {
+		testChip8.key[0x6] = 1;
+	}
+	else if (key == KEY_7) {
+		testChip8.key[0x7] = 1;
+	}
+	else if (key == KEY_8) {
+		testChip8.key[0x8] = 1;
+	}
+	else if (key == KEY_9) {
+		testChip8.key[0x9] = 1;
+	}
+	else if (key == KEY_A) {
+		testChip8.key[0xA] = 1;
+	}
+	else if (key == KEY_B) {
+		testChip8.key[0xB] = 1;
+	}
+	else if (key == KEY_C) {
+		testChip8.key[0xC] = 1;
+	}
+	else if (key == KEY_D) {
+		testChip8.key[0xD] = 1;
+	}
+	else if (key == KEY_E) {
+		testChip8.key[0xE] = 1;
+	}
+	else if (key == KEY_F) {
+		testChip8.key[0xF] = 1;
+	}
 }
 
+// unset the keys when the key is released
 void keyboardUp(unsigned char key, int x, int y)
 {
-
+	if (key == KEY_0) {
+		testChip8.key[0x0] = 0;
+	}
+	else if (key == KEY_1) {
+		testChip8.key[0x1] = 0;
+	}
+	else if (key == KEY_2) {
+		testChip8.key[0x2] = 0;
+	}
+	else if (key == KEY_3) {
+		testChip8.key[0x3] = 0;
+	}
+	else if (key == KEY_4) {
+		testChip8.key[0x4] = 0;
+	}
+	else if (key == KEY_5) {
+		testChip8.key[0x5] = 0;
+	}
+	else if (key == KEY_6) {
+		testChip8.key[0x6] = 0;
+	}
+	else if (key == KEY_7) {
+		testChip8.key[0x7] = 0;
+	}
+	else if (key == KEY_8) {
+		testChip8.key[0x8] = 0;
+	}
+	else if (key == KEY_9) {
+		testChip8.key[0x9] = 0;
+	}
+	else if (key == KEY_A) {
+		testChip8.key[0xA] = 0;
+	}
+	else if (key == KEY_B) {
+		testChip8.key[0xB] = 0;
+	}
+	else if (key == KEY_C) {
+		testChip8.key[0xC] = 0;
+	}
+	else if (key == KEY_D) {
+		testChip8.key[0xD] = 0;
+	}
+	else if (key == KEY_E) {
+		testChip8.key[0xE] = 0;
+	}
+	else if (key == KEY_F) {
+		testChip8.key[0xF] = 0;
+	}
 }
 
 void drawPixel(int x, int y)

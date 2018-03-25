@@ -1,5 +1,29 @@
 #pragma once
 
+// keypad (hex-based), 0 - F | 16 total keys as shown below (left side of standard keyboard)
+//	1	49		2	50		3	51		4	52
+//	q	81		w	87		e	69		r	82
+//	a	65		s	83		d	68		f	70
+//	z	90		x	88		c	67		v	86
+//
+//	x = key '0'
+#define KEY_1	49
+#define KEY_2	50
+#define	KEY_3	51
+#define KEY_4	52
+#define KEY_5	81
+#define KEY_6	87
+#define KEY_7	69
+#define KEY_8	82
+#define KEY_9	65
+#define KEY_A	83
+#define KEY_B	68
+#define KEY_C	70
+#define KEY_D	90
+#define KEY_0	88
+#define KEY_E	67
+#define KEY_F	86
+
 class chip8 {
 public:
 
@@ -39,7 +63,7 @@ public:
 	unsigned short stack[STACK_SIZE];
 	unsigned short sp;
 
-	// keypad (hex-based), 0 - F
+	// key states
 	unsigned char key[16];
 
 	// draw flag (if we draw next cycle)
