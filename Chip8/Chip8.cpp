@@ -136,7 +136,6 @@ void chip8::emulateCycle()
 	case 0x1000: 
 		pc = (opcode & 0x0FFF);
 		break;
-	
 
 	// opcodes 0x2NNN -> call subroutine (subroutine will return)
 	case 0x2000: 
@@ -144,7 +143,6 @@ void chip8::emulateCycle()
 		++sp;			   // increase the stack pointer to next avail location
 		pc = opcode & 0x0FFF;	// set the pc to the address specified in the opcode (NNN part of 0x2NNN)
 		break;
-	
 
 	// opcode 0x3XNN -> Skip the next instruction if VX equals NN
 	case 0x3000: 
@@ -154,8 +152,7 @@ void chip8::emulateCycle()
 		else {
 			pc += 2;   // otherwise, just go to the next instruction
 		}
-		break;
-	
+		break;	
 
 	// opcode 0x4XNN -> Skips the next instruction if VX doesn't equal NN.
 	case 0x4000: 
@@ -182,7 +179,6 @@ void chip8::emulateCycle()
 		V[(opcode & 0x0F00) >> 8] = (opcode & 0x00FF);
 		pc += 2; 
 		break;
-
 
 	// opcode 0x7XNN -> Adds NN to VX. (Carry flag is not changed)
 	case 0x7000:
@@ -289,16 +285,22 @@ void chip8::emulateCycle()
 		}
 		break;
 
-
-
-
-
-	// set the index address 'I'
+	// opcode 0xANNN -> Sets I to the address NNN.
 	case 0xA000:                // ANNN:  Sets I to the address NNN
 		I = opcode & 0x0FFF;    // - set I to the NNN part of the opcode
 		pc += 2;                // - move the program counter by 2 for next opcode
 		break;
 
+	// opcode 0xBNNN -> Jumps to the address NNN plus V0.
+	case 0xB000:
+		pc = V[0x0] + (opcode & 0x0FFF);
+		break;
+
+	// opcode 0xCXNN -> Sets VX to the result of a bitwise and operation on a random number (Typically: 0 to 255) and NN.
+	case 0xC000:
+		V[(opcode & 0x0F00) >> 8] = (rand() % 0xFF) && (opcode & 0x00FF);
+		pc += 2;
+		break;
 
 	// opcodes 0xDXYN -> draw a sprite on screen (sprite = 8 pixels wide, (opcode & 0x000F) pixels high)
 	case 0xD000: 
@@ -342,6 +344,15 @@ void chip8::emulateCycle()
 		pc += 2; 
 		break;
 	
+	// opcodes 0xEX?? -> Low byte determines the operation 
+	case 0xE000:
+		switch (opcode & 0x00FF) {
+			
+		// opcode 0xEX9E -> Skips the next instruction if the key stored in VX is pressed.
+		case 0x009E:
+			if (key[)
+		}
+
 
 	default: 
 		char msg[] = "Unknown opcode: 0x%X";
