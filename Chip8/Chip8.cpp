@@ -475,7 +475,19 @@ void chip8::emulateCycle()
 		//                    place the hundreds digit in memory at location in I, the tens digit at location I+1, 
 		//                    and the ones digit at location I+2.)
 		case 0x0033:
+			unsigned short bin_val = V[(opcode & 0x0F00) >> 8];
+			unsigned short dec_val = 0;
+			for (int i = 0; i < 8; ++i) {
+				if (bin_val & 0x00000001) {
+					dec_val += 2 ^ i;
+				}
+				bin_val >>= 1;
+			}
 
+			// TODO:  now add to I at the appropriate locations
+
+			pc += 2;
+			break;
 
 		default:
 			char msg[] = "Unknown opcode %X";

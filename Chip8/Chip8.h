@@ -42,7 +42,7 @@ public:
 	//  
 	unsigned char memory[4096];
 
-	// registers  - V[0xF] or V[15] seems to be contextual -> if set after drawing opcode (0xDXYN), it indicates a bit collission
+	// 1 byte (8 bit) data registers  - V[0xF] or V[15] seems to be contextual -> used for bit collision, carry, borrow
 	unsigned char V[16];
 
 	// index (I) and program counter (pc)
