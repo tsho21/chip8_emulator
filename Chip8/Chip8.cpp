@@ -484,8 +484,30 @@ void chip8::emulateCycle()
 				bin_val >>= 1;
 			}
 
-			// TODO:  now add to I at the appropriate locations
+			// break dec_val down to the decimal places
+			memory[I] = dec_val / 100;
+			memory[I + 1] = (dec_val / 10) % 10;
+			memory[I + 2] = (dec_val % 100) / 10; 
+			pc += 2;
+			break;
 
+		// opcode 0xFX55 -> Stores V0 to VX (including VX) in memory starting at address I. I is increased by 1 for each value written.
+		case 0x0055:
+			for (int i = 0; i <= ((opcode & 0x0F00) >> 8); ++i) {
+				memory[I + i] = V[i];
+			}
+			// I = I + X + 1
+			I += ((opcode & 0x0F00) >> 8) + 1;
+			pc += 2;
+			break;
+
+		// opcode 0xFX65 -> Fills V0 to VX (including VX) with values from memory starting at address I. I is increased by 1 for each value written.
+		case 0x0065:
+			for (int i = 0; i <= ((opcode & 0x0F00) >> 8); ++i) {
+				V[i] = memory[I + i];
+			}
+			// I = I + X + 1
+			I += ((opcode & 0x0F00) >> 8) + 1;
 			pc += 2;
 			break;
 
@@ -499,7 +521,7 @@ void chip8::emulateCycle()
 
 
 	default: 
-		char msg[] = "Unknown opcode: 0x%X";
+		char msg[] = "Unknown opcode: %X";
 		debug_fmt_msg(msg, opcode);
 		break;
 	}
