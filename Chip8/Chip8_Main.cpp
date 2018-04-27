@@ -248,15 +248,3 @@ int main(int argc, char **argv)
 
 	return 0;
 }
-
-void testFuncPointers() {
-	int sum(int a, int b);
-	int sub(int a, int b);
-
-	int(*func_ptr[3])(int a, int b) = { sum, sub };
-
-	int noop();
-	int noop_2();
-
-	int(*func_ptrs_noop[2])() = { noop, noop_2 };
-}
