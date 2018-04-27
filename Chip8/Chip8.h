@@ -27,9 +27,6 @@
 class chip8 {
 public:
 
-	// current opcode
-	unsigned short opcode;
-
 	// memory size
 	static unsigned const short MEMORY_SIZE = 4096;
 
@@ -101,4 +98,133 @@ public:
 	template <typename T>
 	void debug_fmt_msg(char formatted_message[], T values);
 	void debug_simple_msg(char *message);
+
+	/**
+	 * When adding opcodes:
+	 *  1.  Add to enum 'opcode' before the last entry
+	 *  2.  Add the declaration of the opcode routine under '// opcode routines'
+	 *  3.  Add the address of the routine to the end of 'opcode_impls'
+	 *  4.  Define the implementation of the opcode routine in Chip8.cpp
+	*/
+
+	// opcodes
+	enum opcodes {
+		_0x00E0 = 0,
+		_0x00EE,
+		_0x0NNN,
+		_0x1NNN,
+		_0x2NNN,
+		_0x3XNN,
+		_0x4XNN,
+		_0x5XY0,
+		_0x6XNN,
+		_0x7XNN,
+		_0x8XY0,
+		_0x8XY1,
+		_0x8XY2,
+		_0x8XY3,
+		_0x8XY4,
+		_0x8XY5,
+		_0x8XY6,
+		_0x8XY7,
+		_0x8XYE,
+		_0x9XY0,
+		_0xANNN,
+		_0xBNNN,
+		_0xCXNN,
+		_0xDXYN,
+		_0xEX9E,
+		_0xEXA1,
+		_0xFX07,
+		_0xFX0A,
+		_0xFX15,
+		_0xFX18,
+		_0xFX1E,
+		_0xFX29,
+		_0xFX33,
+		_0xFX55,
+		_0xFX65,
+		NUMBER_OF_OPCODES
+	};
+
+	typedef enum opcodes Opcode;
+
+	// translate opcode
+	Opcode translate_opcode(unsigned short);
+
+	// opcode routines
+	bool opcode_0x00E0(unsigned short);
+	bool opcode_0x00EE(unsigned short);
+	bool opcode_0x0NNN(unsigned short);
+	bool opcode_0x1NNN(unsigned short);
+	bool opcode_0x2NNN(unsigned short);
+	bool opcode_0x3XNN(unsigned short);
+	bool opcode_0x4XNN(unsigned short);
+	bool opcode_0x5XY0(unsigned short);
+	bool opcode_0x6XNN(unsigned short);
+	bool opcode_0x7XNN(unsigned short);
+	bool opcode_0x8XY0(unsigned short);
+	bool opcode_0x8XY1(unsigned short);
+	bool opcode_0x8XY2(unsigned short);
+	bool opcode_0x8XY3(unsigned short);
+	bool opcode_0x8XY4(unsigned short);
+	bool opcode_0x8XY5(unsigned short);
+	bool opcode_0x8XY6(unsigned short);
+	bool opcode_0x8XY7(unsigned short);
+	bool opcode_0x8XYE(unsigned short);
+	bool opcode_0x9XY0(unsigned short);
+	bool opcode_0xANNN(unsigned short);
+	bool opcode_0xBNNN(unsigned short);
+	bool opcode_0xCXNN(unsigned short);
+	bool opcode_0xDXYN(unsigned short);
+	bool opcode_0xEX9E(unsigned short);
+	bool opcode_0xEXA1(unsigned short);
+	bool opcode_0xFX07(unsigned short);
+	bool opcode_0xFX0A(unsigned short);
+	bool opcode_0xFX15(unsigned short);
+	bool opcode_0xFX18(unsigned short);
+	bool opcode_0xFX1E(unsigned short);
+	bool opcode_0xFX29(unsigned short);
+	bool opcode_0xFX33(unsigned short);
+	bool opcode_0xFX55(unsigned short);
+	bool opcode_0xFX65(unsigned short);
+
+	// opcode routine list
+	typedef bool(chip8::*opcode_impl)(unsigned short);
+	opcode_impl opcode_impls[NUMBER_OF_OPCODES] = {
+		&opcode_0x00E0,
+		&opcode_0x00EE,
+		&opcode_0x0NNN,
+		&opcode_0x1NNN,
+		&opcode_0x2NNN,
+		&opcode_0x3XNN,
+		&opcode_0x4XNN,
+		&opcode_0x5XY0,
+		&opcode_0x6XNN,
+		&opcode_0x7XNN,
+		&opcode_0x8XY0,
+		&opcode_0x8XY1,
+		&opcode_0x8XY2,
+		&opcode_0x8XY4,
+		&opcode_0x8XY5,
+		&opcode_0x8XY6,
+		&opcode_0x8XY7,
+		&opcode_0x8XYE,
+		&opcode_0x9XY0,
+		&opcode_0xANNN,
+		&opcode_0xBNNN,
+		&opcode_0xCXNN,
+		&opcode_0xDXYN,
+		&opcode_0xEX9E,
+		&opcode_0xEXA1,
+		&opcode_0xFX07,
+		&opcode_0xFX0A,
+		&opcode_0xFX15,
+		&opcode_0xFX18,
+		&opcode_0xFX1E,
+		&opcode_0xFX29,
+		&opcode_0xFX33,
+		&opcode_0xFX55,
+		&opcode_0xFX65
+	};
 };

@@ -117,6 +117,7 @@
   <ItemGroup>
     <ClInclude Include="Chip8.h" />
     <ClInclude Include="Debug.h" />
+    <ClInclude Include="OpcodeMap.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Chip8.cpp" />

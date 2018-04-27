@@ -1,5 +1,6 @@
 #include "stdio.h"  // debug and loader only
 #include "stdlib.h"
+#include "OpcodeMap.h"
 #include "Chip8.h" 
 #include "Debug.h"
 
@@ -26,15 +27,136 @@ chip8::~chip8()
 	// empty destructor
 }
 
+chip8::Opcode chip8::translate_opcode(unsigned short opcode) {
+	switch (opcode & 0xF000) {
+	case 0x0000:
+		switch (opcode & 0x0FFF) {
+		case 0x00E0:
+			return _0x00E0;
+			break;
+		case 0x00EE:
+			return _0x00EE;
+			break;
+		default:
+			return _0x0NNN;
+			break;
+		}
+	case 0x1000:
+		return _0x1NNN;
+		break;
+	case 0x2000:
+		return _0x2NNN;
+		break;
+	case 0x3000:
+		return _0x3XNN;
+		break;
+	case 0x4000:
+		return _0x4XNN;
+		break;
+	case 0x5000:
+		return _0x5XY0;
+		break;
+	case 0x6000:
+		return _0x6XNN;
+		break;
+	case 0x7000:
+		return _0x7XNN;
+		break;
+	case 0x8000:
+		switch (opcode & 0x000F) {
+		case 0x0000:
+			return _0x8XY0;
+			break;
+		case 0x0001:
+			return _0x8XY1;
+			break;
+		case 0x0002:
+			return _0x8XY2;
+			break;
+		case 0x0003:
+			return _0x8XY3;
+			break;
+		case 0x0004:
+			return _0x8XY4;
+			break;
+		case 0x0005:
+			return _0x8XY5;
+			break;
+		case 0x0006:
+			return _0x8XY6;
+			break;
+		case 0x0007:
+			return _0x8XY7;
+			break;
+		case 0x000E:
+			return _0x8XYE;
+			break;
+		}
+	case 0x9000:
+		return _0x9XY0;
+		break;
+	case 0xA000:
+		return _0xANNN;
+		break;
+	case 0xB000:
+		return _0xBNNN;
+		break;
+	case 0xC000:
+		return _0xCXNN;
+		break;
+	case 0xD000:
+		return _0xDXYN;
+		break;
+	case 0xE000:
+		switch (opcode & 0x00FF) {
+		case 0x009E:
+			return _0xEX9E;
+			break;
+		case 0x00A1:
+			return _0xEX9E;
+			break;
+		}
+	case 0xF000:
+		switch (opcode & 0x00FF) {
+		case 0x0007:
+			return _0xFX07;
+			break;
+		case 0x000A:
+			return _0xFX0A;
+			break;
+		case 0x0015:
+			return _0xFX15;
+			break;
+		case 0x0018:
+			return _0xFX18;
+			break;
+		case 0x001E:
+			return _0xFX1E;
+			break;
+		case 0x0029:
+			return _0xFX29;
+			break;
+		case 0x0033:
+			return _0xFX33;
+			break;
+		case 0x0055:
+			return _0xFX55;
+			break;
+		case 0x0065:
+			return _0xFX65;
+			break;
+		}
+	}
+}
+
 void chip8::initialize()
 {
 	// init registers and memory once
-	pc = 0x200;    // program counter always starts at 0x200
-	opcode = 0;        // reset current opcode
-	I = 0;        // reset index register
-	sp = 0;        // reset stack pointer
+	pc = 0x200;			// program counter always starts at 0x200
+	I = 0;				// reset index register
+	sp = 0;				// reset stack pointer
 
-				   // clear display
+	 // clear display
 	for (int i = 0; i < (64 * 32); ++i)
 	{
 		gfx[i] = 0;
@@ -93,438 +215,19 @@ void chip8::emulateCycle()
 	//  opcode = 0x00 0xA2
 	//  opcode = 0xA2 0x00  (0xA2) << 8
 	//  opcode = 0xA2 0xF0  
-	opcode = memory[pc] << 8 | memory[pc + 1];
+	unsigned short raw_opcode = memory[pc] << 8 | memory[pc + 1];
 
-	// DECODE OPCODE
-	// look at the first 4 bits to determine most opcodes
-	switch (opcode & 0xF000)
-	{
-		// execute opcodes
+	// TODO: Want to call this way...
+	// map[getHash(opcode)]->opcode_impl();
 
-	// opcode 0x0NNN -> Calls RCA 1802 program at address NNN. Not necessary for most ROMs.
-	// opcode 0x00E0 -> Clears the screen
-	// opcode 0x00EE -> Returns from a subroutine
-	case 0x0000: 
-		switch (opcode & 0x0FFF) {
-			case 0x00E0: 
-				// clear the screen
-				for (int i = 0; i < (64 * 32); ++i) {
-					gfx[i] = 0x0;
-				}
-				drawFlag = true;
-				pc += 2;
-				break;
-			
-			case 0x00EE: 
-				// pop the stack and return to where the pc pointer was
-				--sp;
-				pc = stack[sp];  // return to the point of function call
-				pc += 2;    // increase the pc to the next instruction after the function call
-				break;
-			
+	// decode opcode
+	Opcode opcode = translate_opcode(raw_opcode);  /// this should really just be identifed as a hash into a bucket map below
 
-			// opcode 0x0NNN case -> this is probably not necessary
-			default: 
-				stack[sp] = pc;  // store the current pc on the stack
-				++sp;			 // increment stack pointer
-				pc = (opcode & 0x0FFF);  // set the pc to the address specified in the opcode (NNN part of 0x0NNN)
-				break;
-		}
-		break;
+	// get the implementation:  Uses the numerical behavior of enum values to get the correct opcode impl via it's index
+	opcode_impl func = opcode_impls[opcode];
 
-	// opcodes 0x1NNN -> jump to address specified in 'NNN' 
-	case 0x1000: 
-		pc = (opcode & 0x0FFF);
-		break;
-
-	// opcodes 0x2NNN -> call subroutine (subroutine will return)
-	case 0x2000: 
-		stack[sp] = pc;    // store the current pc in the stack
-		++sp;			   // increase the stack pointer to next avail location
-		pc = opcode & 0x0FFF;	// set the pc to the address specified in the opcode (NNN part of 0x2NNN)
-		break;
-
-	// opcode 0x3XNN -> Skip the next instruction if VX equals NN
-	case 0x3000: 
-		if ((V[(opcode & 0x0F00) >> 8] == (opcode & 0x00FF))) {
-			pc += 4;   // skip the next instruction 
-		}
-		else {
-			pc += 2;   // otherwise, just go to the next instruction
-		}
-		break;	
-
-	// opcode 0x4XNN -> Skips the next instruction if VX doesn't equal NN.
-	case 0x4000: 
-		if ((V[(opcode & 0x0F00) >> 8] != (opcode & 0x00FF))) {
-			pc += 4;  // skip the next instruction
-		}
-		else {
-			pc += 2;  // otherwise, just go to the next instruction
-		}
-		break;
-		
-	// opcode 0x5XY0 -> Skips the next instruction if VX equals VY. 
-	case 0x5000:
-		if (V[(opcode & 0x0F00) >> 8] == V[(opcode & 0x00F0) >> 4]) {
-			pc += 4;  // skip the next instruction
-		}
-		else {
-			pc += 2;  // otherwise, just go to the next instruction
-		}
-		break;
-
-	// opcode 0x6XNN -> Sets VX to NN.
-	case 0x6000:
-		V[(opcode & 0x0F00) >> 8] = (opcode & 0x00FF);
-		pc += 2; 
-		break;
-
-	// opcode 0x7XNN -> Adds NN to VX. (Carry flag is not changed)
-	case 0x7000:
-		V[(opcode & 0x0F00) >> 8] += (opcode & 0x00FF);
-		pc += 2;
-
-	// opcodes 0x8XY? -> Last bit determines the operation
-	case 0x0800:
-		switch (opcode & 0x000F) {
-
-		// opcode 0x8XY0 -> Sets VX to the value of VY
-		case 0x0000:
-			V[(opcode & 0x0F00) >> 8] = V[(opcode & 0x00F0) >> 4];
-			pc += 2;
-			break;
-
-		// opcode 0x8XY1 -> Sets VX to VX or VY (Bitwise OR operation)
-		case 0x0001:
-			V[(opcode & 0x0F00) >> 8] |= V[(opcode & 0x00F0) >> 4];
-			pc += 2;
-			break;
-
-		// opcode 0x8XY2 -> Sets VX to VX and VY. (Bitwise AND operation)
-		case 0x0002: 
-			V[(opcode & 0x0F00) >> 8] &= V[(opcode & 0x00F0) >> 4];
-			pc += 2;
-			break;
-
-		// opcode 0x8XY3 -> Sets VX to VX xor VY.
-		case 0x0003:
-			V[(opcode & 0x0F00) >> 8] ^= V[(opcode & 0x00F0) >> 4];
-			pc += 2;
-			break;
-
-		// opcode 0x8XY4 -> Adds VY to VX. VF is set to 1 when there's a carry, and to 0 when there isn't
-		case 0x0004:
-			// we figure out how much of 0xFF is left when subtracting what is already in V[X]
-			//   then if what is going to be added in V[Y] to that is more, then adding V[Y] to V[X] will cause overflow
-			//  
-			//   Example:
-			//          Will 4 + 3 overflow 9?  ->  (9 - 4) = 5.   3 being added is not > 5, so no
-			//          Will 4 + 7 overflow 9?  ->  (9 - 4) = 5.   7 being added is > 5, so yes
-			if (V[(opcode & 0x00F0) >> 4] > (0xFF - V[(opcode & 0x0F00) >> 8])) {
-				V[0xF] = 1;  // set carry flag
-			}
-			else {
-				V[0xF] = 0; 
-			}
-			V[(opcode & 0x0F00) >> 8] += V[(opcode & 0x00F0) >> 4];    // now do the addition
-			pc += 2;
-			break;
-
-		// opcode 0x8XY5 -> VY is subtracted from VX. VF is set to 0 when there's a borrow, and 1 when there isn't.
-		case 0x0005:
-			// it is easier than above to figure out if we'll need to borrow
-			//  we just need to determine if VY is bigger than VX - if it is, VX will go below 0 and need to borrow
-			if (V[(opcode & 0x00F0) >> 4] > V[(opcode & 0x0F00) >> 8]) {
-				V[0xF] = 1;  // set borrow flag
-			}
-			else {
-				V[0xF] = 0; 
-			}
-			V[(opcode & 0x0F00) >> 8] -= V[(opcode & 0x00F0) >> 4];    // now do the subtraction
-			pc += 2;
-			break;
-
-		// opcode 0x8XY6 -> Shifts VY right by one and copies the result to VX. 
-		//					VF is set to the value of the least significant bit of VY before the shift
-		case 0x0006:
-			V[0xF] = V[(opcode & 0x00F0) >> 4] & 0x01;
-			V[(opcode & 0x0F00) >> 8] = (V[(opcode & 0x00F0) >> 4] >>= 1);
-			pc += 2;
-			break;
-
-		// opcode 0x8XY7 -> Sets VX to VY minus VX. VF is set to 0 when there's a borrow, and 1 when there isn't.
-		case 0x0007:
-			// if we're subtracting VX from VY, if VX is larger than VY, there will be a borrow
-			if (V[(opcode & 0x0F00) >> 8] > V[(opcode & 0x00F0) >> 4]) {
-				V[0xF] = 0;
-			}
-			else {
-				V[0xF] = 1;
-			}
-			V[(opcode & 0x0F00) >> 8] = V[(opcode & 0x00F0) >> 4] - V[(opcode & 0x0F00) >> 8];
-			pc += 2;
-			break;
-
-		// opcode 0x8XYE -> Shifts VY left by one and copies the result to VX. 
-		//					VF is set to the value of the most significant bit of VY before the shift
-		case 0x000E:
-			V[0xF] = V[(opcode & 0x00F0) >> 4] & 0x80;   // msb = 0b10000000 = 0x80
-			V[(opcode & 0x0F00) >> 8] = (V[(opcode & 0x00F0) >> 4] <<= 1);
-			pc += 2;
-			break;
-
-		default:
-			char msg[] = "Unknown opcode %X";
-			debug_fmt_msg(msg, opcode);
-			debug_simple_msg("Bad program - exiting!");
-			exit(1);
-		}
-
-		
-	// opcode 0x9XY0 -> Skips the next instruction if VX doesn't equal VY.
-	case 0x9000:
-		if (V[(opcode & 0x0F00) >> 8] != V[(opcode & 0x00F0) >> 4]) {
-			pc += 4;  // skip next instruction
-		}
-		else {
-			pc += 2;
-		}
-		break;
-
-	// opcode 0xANNN -> Sets I to the address NNN.
-	case 0xA000:                // ANNN:  Sets I to the address NNN
-		I = opcode & 0x0FFF;    // - set I to the NNN part of the opcode
-		pc += 2;                // - move the program counter by 2 for next opcode
-		break;
-
-	// opcode 0xBNNN -> Jumps to the address NNN plus V0.
-	case 0xB000:
-		pc = V[0x0] + (opcode & 0x0FFF);
-		break;
-
-	// opcode 0xCXNN -> Sets VX to the result of a bitwise and operation on a random number (Typically: 0 to 255) and NN.
-	case 0xC000:
-		V[(opcode & 0x0F00) >> 8] = (rand() % 0xFF) && (opcode & 0x00FF);
-		pc += 2;
-		break;
-
-	// opcodes 0xDXYN -> draw a sprite on screen (sprite = 8 pixels wide, (opcode & 0x000F) pixels high)
-	case 0xD000: 
-		unsigned short x = V[(opcode & 0x0F00) >> 8];
-		unsigned short y = V[(opcode & 0x00F0) >> 4];
-		unsigned short height = opcode & 0x000F;
-		unsigned short sprite_pixel;
-
-		// reset register VF (this is the drawFlag and pixel collision register - status register)
-		V[0xF] = 0;
-
-		// loop through the height of the sprite
-		for (int yline = 0; yline < height; ++yline) {
-			
-			// get the sprite to be drawn from memory - sprite will be at 'I', but need to scan through the entire height
-			sprite_pixel = memory[I + yline];
-
-			// scan through the bits of the sprite pixel obtained from memory (8 bits - use 0x10000000, or 0x80, and shift right to check)
-			for (int xline = 0; xline < SPRITE_WIDTH; ++xline) {
-
-				// check if the bit is set to '1' - if it's 0, we don't bother changing anything in memory now
-				if (sprite_pixel & (0x80 >> xline) != 0) {
-
-					// check the location to be drawn on screen for any current pixel being displayed
-					// match a current screen (gfx[]) pixel by:
-					//   1. start at x and y given by the V registers
-					//   2. go through bit by bit across the sprite
-					//   3. also go through the height of the pixel by using yline (height of to be drawn pixel) and moving 64 across (using a single dimensional array)
-					if (gfx[(x + xline) + ((y + yline) * 64)] == 1) {
-						// if the pixel bit is '1' and the same gfx bit is '1', we have a pixel collision, set the VF register
-						V[0xF] = 1;
-					}
-					// now XOR '1' with the gfx register to get the final pixel value to draw (on or off)
-					//   this effectively makes the screen pixel '1' or on if it was '0' of off
-					//   OR we make it '0' if it was '1' because we had a pixel collision
-					gfx[(x + xline) + ((y + yline) * 64)] ^= 1;
-				}
-			}
-		}
-		drawFlag = true;
-		pc += 2; 
-		break;
-	
-	// opcodes 0xEX?? -> Low byte determines the operation 
-	case 0xE000:
-		switch (opcode & 0x00FF) {
-			
-		// opcode 0xEX9E -> Skips the next instruction if the key stored in VX is pressed.
-		case 0x009E:
-			unsigned short store_key = V[(opcode & 0x0F00) >> 8];
-			if (store_key <= 0xF) {
-				if (key[store_key] == 1) {
-					pc += 4;
-				}
-				else {
-					pc += 2;
-				}
-			}
-			else {
-				char msg[] = "Key stored in V[%i] is outside of the hex bounds.";
-				debug_fmt_msg(msg, store_key);
-				debug_simple_msg("Illegal reference attempted on key[] array!");
-				exit(0);
-			}
-			break;
-
-		// opcode 0xEXA1 -> Skips the next instruction if the key stored in VX isn't pressed.
-		case 0x00A1:
-			unsigned short store_key = V[(opcode & 0x0F00) >> 8];
-			if (store_key <= 0xF) {
-				if (key[store_key] == 0) {
-					pc += 4;
-				}
-				else {
-					pc += 2;
-				}
-			}
-			else {
-				char msg[] = "Key stored in V[%i] is outside of the hex bounds.";
-				debug_fmt_msg(msg, store_key);
-				debug_simple_msg("Illegal reference attempted on key[] array!");
-				exit(1);
-			}
-			break;
-
-		default:
-			char msg[] = "Unknown opcode %X";
-			debug_fmt_msg(msg, opcode);
-			debug_simple_msg("Bad program - exiting!");
-			exit(1);
-		}
-
-	// opcodes 0xFX?? -> Last byte determines operation
-	case 0xF000:
-		switch (opcode & 0x00FF) {
-
-		// opcode 0xFX07 -> Sets VX to the value of the delay timer.
-		case 0x0007:
-			V[(opcode & 0x0F00) >> 8] = delay_timer;
-			pc += 2;
-			break;
-
-		// opcode 0xFX0A -> A key press is awaited, and then stored in VX. 
-		//					(Blocking Operation. All instruction halted until next key event)
-		case 0x000A:
-			bool isKeyPressed = false;
-			for (int i = 0; i < 16; ++i) {
-				if (key[i] == 1) {
-					isKeyPressed = true;
-					V[(opcode & 0x0F00) >> 8] = i;
-					break;
-				}
-			}
-			if (!isKeyPressed) {
-				return;  // skip the rest of the emulation cycle and try again (wait on the key)
-			}
-			pc += 2;
-			break;
-
-		// opcode 0xFX15 -> Sets the delay timer to VX.	
-		case 0x0015:
-			delay_timer = V[(opcode & 0x0F00) >> 8];
-			pc += 2;
-			break;
-
-		// opcode 0xFX18 -> Sets the sound timer to VX.
-		case 0x0018: 
-			sound_timer = V[(opcode & 0x0F00) >> 8];
-			pc += 2;
-			break;
-
-		// opcode 0xFX1E -> Adds VX to I.
-		//
-		// Per Wikipedia footnote (3)
-		// VF is set to 1 when there is a range overflow (I+VX>0xFFF), and to 0 when there isn't. 
-		// This is an undocumented feature of the CHIP-8 and used by the Spacefight 2091! game.
-		case 0x001E:
-			if ((I + V[(opcode & 0x0F00) >> 8]) > 0xFFF) {
-				V[0xF] = 1;
-			}
-			else {
-				V[0xF] = 0;
-			}
-			I += V[(opcode & 0x0F00) >> 8];  // now just add them and store in I
-			pc += 2;
-			break;
-
-		// opcode 0xFX29 -> Sets I to the location of the sprite for the character in VX. 
-		//                  Characters 0-F (in hexadecimal) are represented by a 4x5 font.
-		case 0x0029:
-			// get the character from V[(opcode & 0x0F00) >> 8]
-			// we need to get the sprite data for this from the fontset memory
-			// each character is 5 bytes wide (4x5)
-
-			// implementation of this is multiple what V[X] points to by 5 (0 * 5 = 0, 1 * 5 = 5, 2 * 5 = 10, etc...)
-			//  this will skip ahead the correct number of locations (bytes) in the fontset array to the start of the correct hex character
-			I = V[(opcode & 0x0F00) >> 8] * 0x5;
-			pc += 2;
-			break;
-
-		// opcode 0xFX33 -> Stores the binary-coded decimal representation of VX, 
-		//                  with the most significant of three digits at the address in I, 
-		//                  the middle digit at I plus 1, and the least significant digit at I plus 2. 
-		//                  (In other words, take the decimal representation of VX, 
-		//                    place the hundreds digit in memory at location in I, the tens digit at location I+1, 
-		//                    and the ones digit at location I+2.)
-		case 0x0033:
-			unsigned short bin_val = V[(opcode & 0x0F00) >> 8];
-			unsigned short dec_val = 0;
-			for (int i = 0; i < 8; ++i) {
-				if (bin_val & 0x00000001) {
-					dec_val += 2 ^ i;
-				}
-				bin_val >>= 1;
-			}
-
-			// break dec_val down to the decimal places
-			memory[I] = dec_val / 100;
-			memory[I + 1] = (dec_val / 10) % 10;
-			memory[I + 2] = (dec_val % 100) / 10; 
-			pc += 2;
-			break;
-
-		// opcode 0xFX55 -> Stores V0 to VX (including VX) in memory starting at address I. I is increased by 1 for each value written.
-		case 0x0055:
-			for (int i = 0; i <= ((opcode & 0x0F00) >> 8); ++i) {
-				memory[I + i] = V[i];
-			}
-			// I = I + X + 1
-			I += ((opcode & 0x0F00) >> 8) + 1;
-			pc += 2;
-			break;
-
-		// opcode 0xFX65 -> Fills V0 to VX (including VX) with values from memory starting at address I. I is increased by 1 for each value written.
-		case 0x0065:
-			for (int i = 0; i <= ((opcode & 0x0F00) >> 8); ++i) {
-				V[i] = memory[I + i];
-			}
-			// I = I + X + 1
-			I += ((opcode & 0x0F00) >> 8) + 1;
-			pc += 2;
-			break;
-
-		default:
-			char msg[] = "Unknown opcode %X";
-			debug_fmt_msg(msg, opcode);
-			debug_simple_msg("Bad program - exiting!");
-			exit(1);
-		}
-
-
-
-	default: 
-		char msg[] = "Unknown opcode: %X";
-		debug_fmt_msg(msg, opcode);
-		break;
-	}
+	// execute the opcode
+	bool result = (this->*func)(raw_opcode);
 
 	// update timers
 	if (delay_timer > 0)
@@ -600,3 +303,385 @@ void chip8::debug_fmt_msg(char formatted_message[], T object)
 	DBOUT("\n");
 }
 
+/**
+ * Opcode Routines
+ * 
+*/
+
+// opcode 0x00E0 -> Clears the screen
+bool chip8::opcode_0x00E0(unsigned short opcode) {
+	for (int i = 0; i < (64 * 32); ++i) {
+		gfx[i] = 0x0;
+	}
+	drawFlag = true;
+	pc += 2;
+}
+
+// opcode 0x00EE -> Returns from a subroutine
+bool chip8::opcode_0x00EE(unsigned short opcode) {
+	// pop the stack and return to where the pc pointer was
+	--sp;
+	pc = stack[sp];  // return to the point of function call
+	pc += 2;    // increase the pc to the next instruction after the function call
+}
+
+// opcode 0x0NNN -> Calls RCA 1802 program at address NNN. Not necessary for most ROMs.
+bool chip8::opcode_0x0NNN(unsigned short opcode) {
+	stack[sp] = pc;  // store the current pc on the stack
+	++sp;			 // increment stack pointer
+	pc = (opcode & 0x0FFF);  // set the pc to the address specified in the opcode (NNN part of 0x0NNN)
+}
+
+// opcodes 0x1NNN -> jump to address specified in 'NNN' 
+bool chip8::opcode_0x1NNN(unsigned short opcode) {
+	pc = (opcode & 0x0FFF); // jump to address stored in NNN
+}
+
+// opcodes 0x2NNN -> call subroutine (subroutine will return)
+bool chip8::opcode_0x2NNN(unsigned short opcode) {
+	stack[sp] = pc;    // store the current pc in the stack
+	++sp;			   // increase the stack pointer to next avail location
+	pc = opcode & 0x0FFF;	// set the pc to the address specified in the opcode (NNN part of 0x2NNN)
+}
+
+// opcode 0x3XNN -> Skip the next instruction if VX equals NN
+bool chip8::opcode_0x3XNN(unsigned short opcode) {
+	if ((V[(opcode & 0x0F00) >> 8] == (opcode & 0x00FF))) {
+		pc += 4;   // skip the next instruction 
+	}
+	else {
+		pc += 2;   // otherwise, just go to the next instruction
+	}
+}
+
+// opcode 0x4XNN -> Skips the next instruction if VX doesn't equal NN.
+bool chip8::opcode_0x4XNN(unsigned short opcode) {
+	if ((V[(opcode & 0x0F00) >> 8] != (opcode & 0x00FF))) {
+		pc += 4;  // skip the next instruction
+	}
+	else {
+		pc += 2;  // otherwise, just go to the next instruction
+	}
+}
+
+// opcode 0x5XY0 -> Skips the next instruction if VX equals VY. 
+bool chip8::opcode_0x5XY0(unsigned short opcode) {
+	if (V[(opcode & 0x0F00) >> 8] == V[(opcode & 0x00F0) >> 4]) {
+		pc += 4;  // skip the next instruction
+	}
+	else {
+		pc += 2;  // otherwise, just go to the next instruction
+	}
+}
+
+// opcode 0x6XNN -> Sets VX to NN.
+bool chip8::opcode_0x6XNN(unsigned short opcode) {
+	V[(opcode & 0x0F00) >> 8] = (opcode & 0x00FF);
+	pc += 2;
+}
+
+// opcode 0x7XNN -> Adds NN to VX. (Carry flag is not changed)
+bool chip8::opcode_0x7XNN(unsigned short opcode) {
+	V[(opcode & 0x0F00) >> 8] += (opcode & 0x00FF);
+	pc += 2;
+}
+
+// opcode 0x8XY0 -> Sets VX to the value of VY
+bool chip8::opcode_0x8XY0(unsigned short opcode) {
+	V[(opcode & 0x0F00) >> 8] = V[(opcode & 0x00F0) >> 4];
+	pc += 2;
+}
+
+// opcode 0x8XY1 -> Sets VX to VX or VY (Bitwise OR operation)
+bool chip8::opcode_0x8XY1(unsigned short opcode) {
+	V[(opcode & 0x0F00) >> 8] |= V[(opcode & 0x00F0) >> 4];
+	pc += 2;
+}
+
+// opcode 0x8XY2 -> Sets VX to VX and VY. (Bitwise AND operation)
+bool chip8::opcode_0x8XY2(unsigned short opcode) {
+	V[(opcode & 0x0F00) >> 8] &= V[(opcode & 0x00F0) >> 4];
+	pc += 2;
+}
+
+// opcode 0x8XY3 -> Sets VX to VX xor VY.
+bool chip8::opcode_0x8XY3(unsigned short opcode) {
+	V[(opcode & 0x0F00) >> 8] ^= V[(opcode & 0x00F0) >> 4];
+	pc += 2;
+}
+
+// opcode 0x8XY4 -> Adds VY to VX. VF is set to 1 when there's a carry, and to 0 when there isn't
+bool chip8::opcode_0x8XY4(unsigned short opcode) {
+	// we figure out how much of 0xFF is left when subtracting what is already in V[X]
+	//   then if what is going to be added in V[Y] to that is more, then adding V[Y] to V[X] will cause overflow
+	//  
+	//   Example:
+	//          Will 4 + 3 overflow 9?  ->  (9 - 4) = 5.   3 being added is not > 5, so no
+	//          Will 4 + 7 overflow 9?  ->  (9 - 4) = 5.   7 being added is > 5, so yes
+	if (V[(opcode & 0x00F0) >> 4] > (0xFF - V[(opcode & 0x0F00) >> 8])) {
+		V[0xF] = 1;  // set carry flag
+	}
+	else {
+		V[0xF] = 0;
+	}
+	V[(opcode & 0x0F00) >> 8] += V[(opcode & 0x00F0) >> 4];    // now do the addition
+	pc += 2;
+}
+
+// opcode 0x8XY5 -> VY is subtracted from VX. VF is set to 0 when there's a borrow, and 1 when there isn't.
+bool chip8::opcode_0x8XY5(unsigned short opcode) {
+	// it is easier than above to figure out if we'll need to borrow
+	//  we just need to determine if VY is bigger than VX - if it is, VX will go below 0 and need to borrow
+	if (V[(opcode & 0x00F0) >> 4] > V[(opcode & 0x0F00) >> 8]) {
+		V[0xF] = 1;  // set borrow flag
+	}
+	else {
+		V[0xF] = 0;
+	}
+	V[(opcode & 0x0F00) >> 8] -= V[(opcode & 0x00F0) >> 4];    // now do the subtraction
+	pc += 2;
+}
+
+// opcode 0x8XY6 -> Shifts VY right by one and copies the result to VX. 
+//					VF is set to the value of the least significant bit of VY before the shift
+bool chip8::opcode_0x8XY6(unsigned short opcode) {
+	V[0xF] = V[(opcode & 0x00F0) >> 4] & 0x01;
+	V[(opcode & 0x0F00) >> 8] = (V[(opcode & 0x00F0) >> 4] >>= 1);
+	pc += 2;
+}
+
+// opcode 0x8XY7 -> Sets VX to VY minus VX. VF is set to 0 when there's a borrow, and 1 when there isn't.
+bool chip8::opcode_0x8XY7(unsigned short opcode) {
+	// if we're subtracting VX from VY, if VX is larger than VY, there will be a borrow
+	if (V[(opcode & 0x0F00) >> 8] > V[(opcode & 0x00F0) >> 4]) {
+		V[0xF] = 0;
+	}
+	else {
+		V[0xF] = 1;
+	}
+	V[(opcode & 0x0F00) >> 8] = V[(opcode & 0x00F0) >> 4] - V[(opcode & 0x0F00) >> 8];
+	pc += 2;
+}
+
+// opcode 0x8XYE -> Shifts VY left by one and copies the result to VX. 
+//					VF is set to the value of the most significant bit of VY before the shift
+bool chip8::opcode_0x8XYE(unsigned short opcode) {
+	V[0xF] = V[(opcode & 0x00F0) >> 4] & 0x80;   // msb = 0b10000000 = 0x80
+	V[(opcode & 0x0F00) >> 8] = (V[(opcode & 0x00F0) >> 4] <<= 1);
+	pc += 2;
+}
+
+// opcode 0x9XY0 -> Skips the next instruction if VX doesn't equal VY.
+bool chip8::opcode_0x9XY0(unsigned short opcode) {
+	if (V[(opcode & 0x0F00) >> 8] != V[(opcode & 0x00F0) >> 4]) {
+		pc += 4;  // skip next instruction
+	}
+	else {
+		pc += 2;
+	}
+}
+
+// opcode 0xANNN -> Sets I to the address NNN.
+bool chip8::opcode_0xANNN(unsigned short opcode) {
+	I = opcode & 0x0FFF;    // - set I to the NNN part of the opcode
+	pc += 2;                // - move the program counter by 2 for next opcode
+}
+
+// opcode 0xBNNN -> Jumps to the address NNN plus V0.
+bool chip8::opcode_0xBNNN(unsigned short opcode) {
+	pc = V[0x0] + (opcode & 0x0FFF);
+}
+
+// opcode 0xCXNN -> Sets VX to the result of a bitwise and operation on a random number (Typically: 0 to 255) and NN.
+bool chip8::opcode_0xCXNN(unsigned short opcode) {
+	V[(opcode & 0x0F00) >> 8] = (rand() % 0xFF) && (opcode & 0x00FF);
+	pc += 2;
+}
+
+// opcodes 0xDXYN -> draw a sprite on screen (sprite = 8 pixels wide, (opcode & 0x000F) pixels high)
+bool chip8::opcode_0xDXYN(unsigned short opcode) {
+	unsigned short x = V[(opcode & 0x0F00) >> 8];
+	unsigned short y = V[(opcode & 0x00F0) >> 4];
+	unsigned short height = opcode & 0x000F;
+	unsigned short sprite_pixel;
+
+	// reset register VF (this is the drawFlag and pixel collision register - status register)
+	V[0xF] = 0;
+
+	// loop through the height of the sprite
+	for (int yline = 0; yline < height; ++yline) {
+
+		// get the sprite to be drawn from memory - sprite will be at 'I', but need to scan through the entire height
+		sprite_pixel = memory[I + yline];
+
+		// scan through the bits of the sprite pixel obtained from memory (8 bits - use 0x10000000, or 0x80, and shift right to check)
+		for (int xline = 0; xline < SPRITE_WIDTH; ++xline) {
+
+			// check if the bit is set to '1' - if it's 0, we don't bother changing anything in memory now
+			if (sprite_pixel & (0x80 >> xline) != 0) {
+
+				// check the location to be drawn on screen for any current pixel being displayed
+				// match a current screen (gfx[]) pixel by:
+				//   1. start at x and y given by the V registers
+				//   2. go through bit by bit across the sprite
+				//   3. also go through the height of the pixel by using yline (height of to be drawn pixel) and moving 64 across (using a single dimensional array)
+				if (gfx[(x + xline) + ((y + yline) * 64)] == 1) {
+					// if the pixel bit is '1' and the same gfx bit is '1', we have a pixel collision, set the VF register
+					V[0xF] = 1;
+				}
+				// now XOR '1' with the gfx register to get the final pixel value to draw (on or off)
+				//   this effectively makes the screen pixel '1' or on if it was '0' of off
+				//   OR we make it '0' if it was '1' because we had a pixel collision
+				gfx[(x + xline) + ((y + yline) * 64)] ^= 1;
+			}
+		}
+	}
+	drawFlag = true;
+	pc += 2;
+}
+
+// opcode 0xEX9E -> Skips the next instruction if the key stored in VX is pressed.
+bool chip8::opcode_0xEX9E(unsigned short opcode) {
+	unsigned short store_key = V[(opcode & 0x0F00) >> 8];
+	if (store_key <= 0xF) {
+		if (key[store_key] == 1) {
+			pc += 4;
+		}
+		else {
+			pc += 2;
+		}
+	}
+	else {
+		char msg[] = "Key stored in V[%i] is outside of the hex bounds.";
+		debug_fmt_msg(msg, store_key);
+		debug_simple_msg("Illegal reference attempted on key[] array!");
+		exit(0);
+	}
+}
+
+// opcode 0xEXA1 -> Skips the next instruction if the key stored in VX isn't pressed.
+bool chip8::opcode_0xEXA1(unsigned short opcode) {
+	unsigned short store_key = V[(opcode & 0x0F00) >> 8];
+	if (store_key <= 0xF) {
+		if (key[store_key] == 0) {
+			pc += 4;
+		}
+		else {
+			pc += 2;
+		}
+	}
+	else {
+		char msg[] = "Key stored in V[%i] is outside of the hex bounds.";
+		debug_fmt_msg(msg, store_key);
+		debug_simple_msg("Illegal reference attempted on key[] array!");
+		exit(1);
+	}
+}
+
+// opcode 0xFX07 -> Sets VX to the value of the delay timer.
+bool chip8::opcode_0xFX07(unsigned short opcode) {
+	V[(opcode & 0x0F00) >> 8] = delay_timer;
+	pc += 2;
+}
+
+// opcode 0xFX0A -> A key press is awaited, and then stored in VX. 
+//					(Blocking Operation. All instruction halted until next key event)
+bool chip8::opcode_0xFX0A(unsigned short opcode) {
+	bool isKeyPressed = false;
+	for (int i = 0; i < 16; ++i) {
+		if (key[i] == 1) {
+			isKeyPressed = true;
+			V[(opcode & 0x0F00) >> 8] = i;
+			break;
+		}
+	}
+	if (!isKeyPressed) {
+		return;  // skip the rest of the emulation cycle and try again (wait on the key)
+	}
+	pc += 2;
+}
+
+// opcode 0xFX15 -> Sets the delay timer to VX.	
+bool chip8::opcode_0xFX15(unsigned short opcode) {
+	delay_timer = V[(opcode & 0x0F00) >> 8];
+	pc += 2;
+}
+
+// opcode 0xFX18 -> Sets the sound timer to VX.
+bool chip8::opcode_0xFX18(unsigned short opcode) {
+	sound_timer = V[(opcode & 0x0F00) >> 8];
+	pc += 2;
+}
+
+// opcode 0xFX1E -> Adds VX to I.
+//
+// Per Wikipedia footnote (3)
+// VF is set to 1 when there is a range overflow (I+VX>0xFFF), and to 0 when there isn't. 
+// This is an undocumented feature of the CHIP-8 and used by the Spacefight 2091! game.
+bool chip8::opcode_0xFX1E(unsigned short opcode) {
+	if ((I + V[(opcode & 0x0F00) >> 8]) > 0xFFF) {
+		V[0xF] = 1;
+	}
+	else {
+		V[0xF] = 0;
+	}
+	I += V[(opcode & 0x0F00) >> 8];  // now just add them and store in I
+	pc += 2;
+}
+
+// opcode 0xFX29 -> Sets I to the location of the sprite for the character in VX. 
+//                  Characters 0-F (in hexadecimal) are represented by a 4x5 font.
+bool chip8::opcode_0xFX29(unsigned short opcode) {
+	// get the character from V[(opcode & 0x0F00) >> 8]
+	// we need to get the sprite data for this from the fontset memory
+	// each character is 5 bytes wide (4x5)
+
+	// implementation of this is multiple what V[X] points to by 5 (0 * 5 = 0, 1 * 5 = 5, 2 * 5 = 10, etc...)
+	//  this will skip ahead the correct number of locations (bytes) in the fontset array to the start of the correct hex character
+	I = V[(opcode & 0x0F00) >> 8] * 0x5;
+	pc += 2;
+}
+
+// opcode 0xFX33 -> Stores the binary-coded decimal representation of VX, 
+//                  with the most significant of three digits at the address in I, 
+//                  the middle digit at I plus 1, and the least significant digit at I plus 2. 
+//                  (In other words, take the decimal representation of VX, 
+//                    place the hundreds digit in memory at location in I, the tens digit at location I+1, 
+//                    and the ones digit at location I+2.)
+bool chip8::opcode_0xFX33(unsigned short opcode) {
+	unsigned short bin_val = V[(opcode & 0x0F00) >> 8];
+	unsigned short dec_val = 0;
+	for (int i = 0; i < 8; ++i) {
+		if (bin_val & 0x00000001) {
+			dec_val += 2 ^ i;
+		}
+		bin_val >>= 1;
+	}
+
+	// break dec_val down to the decimal places
+	memory[I] = dec_val / 100;
+	memory[I + 1] = (dec_val / 10) % 10;
+	memory[I + 2] = (dec_val % 100) / 10;
+	pc += 2;
+}
+
+// opcode 0xFX55 -> Stores V0 to VX (including VX) in memory starting at address I. I is increased by 1 for each value written.
+bool chip8::opcode_0xFX55(unsigned short opcode) {
+	for (int i = 0; i <= ((opcode & 0x0F00) >> 8); ++i) {
+		memory[I + i] = V[i];
+	}
+	// I = I + X + 1
+	I += ((opcode & 0x0F00) >> 8) + 1;
+	pc += 2;
+}
+
+// opcode 0xFX65 -> Fills V0 to VX (including VX) with values from memory starting at address I. I is increased by 1 for each value written.
+
+bool chip8::opcode_0xFX65(unsigned short opcode) {
+	for (int i = 0; i <= ((opcode & 0x0F00) >> 8); ++i) {
+		V[i] = memory[I + i];
+	}
+	// I = I + X + 1
+	I += ((opcode & 0x0F00) >> 8) + 1;
+	pc += 2;
+}
