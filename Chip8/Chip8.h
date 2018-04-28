@@ -109,6 +109,7 @@ public:
 
 	// opcodes
 	enum opcodes {
+		INVALID_OPCODE = -1,
 		_0x00E0 = 0,
 		_0x00EE,
 		_0x0NNN,

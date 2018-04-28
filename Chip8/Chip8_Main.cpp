@@ -1,4 +1,5 @@
 #include "Chip8.h"
+#include <iostream>
 
 #include "GL/glut.h"
 
@@ -225,7 +226,8 @@ void updateQuads()
 	}
 }
 
-int main(int argc, char **argv)
+// main loop
+int main_loop(int argc, char** argv) 
 {
 	// setup render system
 	setupGraphics(argc, argv);
@@ -247,4 +249,24 @@ int main(int argc, char **argv)
 	glutMainLoop();
 
 	return 0;
+}
+
+int test_loop(int argc, char** argv) 
+{
+	return main_loop(argc, argv);
+}
+
+int main(int argc, char **argv)
+{
+	// TESTING
+	char *main_args[] = { {""}, { "D:\\dev\\C++\\Chip8\\loadtest.chip8"} };
+	int result = test_loop(argc, main_args);
+
+	// wait for input...
+	getchar();
+
+
+
+	// PRODUCTION
+	//return main_loop(argc, argv);
 }

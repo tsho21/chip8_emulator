@@ -3,19 +3,6 @@
 #include "Chip8.h" 
 #include "Debug.h"
 
-// TODO:  more opcodes
-// try getting a function pointer map going where each opcode is 
-//   mapped to its specific execute function
-// decoding may still need to be done via the switch statement here to get 
-//   the proper key for the map and then call the execute function with the 
-//   rest of the opcode data.
-//
-//  Example flow:
-//        1. Decode opcode with switch
-//        2. Get execute function based on decode result
-//          - note: there should be 255 execute functions for each opcode that exists?
-//        3. Call the execute function with the remaining data from the opcode
-
 chip8::chip8()
 {
 	// empty constructor
@@ -145,6 +132,10 @@ chip8::Opcode chip8::translate_opcode(unsigned short opcode) {
 			return _0xFX65;
 			break;
 		}
+
+	default:
+		return INVALID_OPCODE;
+		break;
 	}
 }
 
@@ -220,7 +211,13 @@ void chip8::emulateCycle()
 	// map[getHash(opcode)]->opcode_impl();
 
 	// decode opcode
-	Opcode opcode = translate_opcode(raw_opcode);  /// this should really just be identifed as a hash into a bucket map below
+	Opcode opcode = translate_opcode(raw_opcode);  // this should really just be identifed as a hash into a bucket map below
+
+	if (opcode == INVALID_OPCODE) {
+		debug_fmt_msg("Invalid Opcode parsed from loaded file:  %i", raw_opcode);
+		getchar();
+		exit(1);
+	}
 
 	// get the implementation:  Uses the numerical behavior of enum values to get the correct opcode impl via it's index
 	opcode_impl func = opcode_impls[opcode];
@@ -229,6 +226,7 @@ void chip8::emulateCycle()
 	bool result = (this->*func)(raw_opcode);
 	if (!result) {
 		debug_simple_msg("Unexepcted result from opcode execution, exiting...");
+		getchar();
 		exit(1);
 	}
 
@@ -277,6 +275,16 @@ bool chip8::loadApp(char *filename)
 		debug_simple_msg("Memory allocation error!");
 	}
 
+	// read the bytes into the buffer 
+	size_t bytesread = fread(buffer, 1, bufferSize, ptrFile);
+	
+	// check that they were read
+	if (bytesread != bufferSize) {
+		debug_simple_msg("Read error, too many or too few bytes were read - check the file.");
+		getchar();
+		exit(1);
+	}
+
 	// program or game is loaded into memory starting at location 0x200 (512 in decimal)
 	for (int i = 0; i < bufferSize; ++i)
 	{
@@ -299,7 +307,7 @@ void chip8::debug_simple_msg(char *message)
 template <typename T>
 void chip8::debug_fmt_msg(char formatted_message[], T object)
 {
-	const size_t buf_size = ((sizeof(formatted_message) / sizeof(char)) * sizeof(formatted_message)) * 2;
+	const size_t buf_size = 512;  // TODO:  Needs fixed later to get the length needed
 	char buffer[buf_size];
 	sprintf_s(buffer, formatted_message, object);
 	DBOUT(buffer);
@@ -318,6 +326,7 @@ bool chip8::opcode_0x00E0(unsigned short opcode) {
 	}
 	drawFlag = true;
 	pc += 2;
+	debug_simple_msg("Cleared the screen!");
 	return true; 
 }
 
