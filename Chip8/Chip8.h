@@ -201,10 +201,10 @@ public:
 
 	opcode_info opcodes[NUMBER_OF_OPCODES] = {
 
-		{ _0x00E0, "Clears the screen.",															&chip8::opcode_0x00E0 },
-		{ _0x00EE, "Returns from a subroutine.",													&chip8::opcode_0x00EE },
-		{ _0x0NNN, "Calls RCA 1802 program at address NNN. Not necessary for most ROMs.",			&chip8::opcode_0x0NNN },
-		{ _0x1NNN, "Jump to address specified in 'NNN'.",											&chip8::opcode_0x1NNN },
+		{ _0x00E0, "Clears the screen.",                                                            &chip8::opcode_0x00E0 },
+		{ _0x00EE, "Returns from a subroutine.",                                                    &chip8::opcode_0x00EE },
+		{ _0x0NNN, "Calls RCA 1802 program at address NNN. Not necessary for most ROMs.",           &chip8::opcode_0x0NNN },
+		{ _0x1NNN, "Jump to address specified in 'NNN'.",                                           &chip8::opcode_0x1NNN },
 		{ _0x2NNN, "all subroutine (subroutine will return).",										&chip8::opcode_0x2NNN },
 		{ _0x3XNN, "Skip the next instruction if VX equals NN.", 									&chip8::opcode_0x3XNN },
 		{ _0x4XNN, "Skips the next instruction if VX doesn't equal NN.",							&chip8::opcode_0x4XNN },
