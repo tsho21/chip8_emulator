@@ -220,7 +220,7 @@ void chip8::emulateCycle()
 	}
 
 	// get the implementation:  Uses the numerical behavior of enum values to get the correct opcode impl via it's index
-	opcode_impl func = opcode_impls[opcode];
+	opcode_impl func = opcodes[opcode].executor;
 
 	// execute the opcode
 	bool result = (this->*func)(raw_opcode);
@@ -228,6 +228,9 @@ void chip8::emulateCycle()
 		debug_simple_msg("Unexepcted result from opcode execution, exiting...");
 		getchar();
 		exit(1);
+	}
+	else {
+		printf("Executed opcode %s\n", opcodes[opcode].description);
 	}
 
 	// update timers
@@ -326,7 +329,6 @@ bool chip8::opcode_0x00E0(unsigned short opcode) {
 	}
 	drawFlag = true;
 	pc += 2;
-	debug_simple_msg("Cleared the screen!");
 	return true; 
 }
 
@@ -553,7 +555,7 @@ bool chip8::opcode_0xDXYN(unsigned short opcode) {
 		for (int xline = 0; xline < SPRITE_WIDTH; ++xline) {
 
 			// check if the bit is set to '1' - if it's 0, we don't bother changing anything in memory now
-			if (sprite_pixel & (0x80 >> xline) != 0) {
+			if ((sprite_pixel & (0x80 >> xline)) != 0) {
 
 				// check the location to be drawn on screen for any current pixel being displayed
 				// match a current screen (gfx[]) pixel by:
@@ -722,7 +724,6 @@ bool chip8::opcode_0xFX55(unsigned short opcode) {
 }
 
 // opcode 0xFX65 -> Fills V0 to VX (including VX) with values from memory starting at address I. I is increased by 1 for each value written.
-
 bool chip8::opcode_0xFX65(unsigned short opcode) {
 	for (int i = 0; i <= ((opcode & 0x0F00) >> 8); ++i) {
 		V[i] = memory[I + i];

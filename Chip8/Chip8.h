@@ -149,6 +149,7 @@ public:
 	};
 
 	typedef enum opcodes Opcode;
+	
 
 	// translate opcode
 	Opcode translate_opcode(unsigned short);
@@ -190,42 +191,50 @@ public:
 	bool opcode_0xFX55(unsigned short);
 	bool opcode_0xFX65(unsigned short);
 
-	// opcode routine list
+	// opcode information
 	typedef bool(chip8::*opcode_impl)(unsigned short);
-	opcode_impl opcode_impls[NUMBER_OF_OPCODES] = {
-		&chip8::opcode_0x00E0,
-		&chip8::opcode_0x00EE,
-		&chip8::opcode_0x0NNN,
-		&chip8::opcode_0x1NNN,
-		&chip8::opcode_0x2NNN,
-		&chip8::opcode_0x3XNN,
-		&chip8::opcode_0x4XNN,
-		&chip8::opcode_0x5XY0,
-		&chip8::opcode_0x6XNN,
-		&chip8::opcode_0x7XNN,
-		&chip8::opcode_0x8XY0,
-		&chip8::opcode_0x8XY1,
-		&chip8::opcode_0x8XY2,
-		&chip8::opcode_0x8XY4,
-		&chip8::opcode_0x8XY5,
-		&chip8::opcode_0x8XY6,
-		&chip8::opcode_0x8XY7,
-		&chip8::opcode_0x8XYE,
-		&chip8::opcode_0x9XY0,
-		&chip8::opcode_0xANNN,
-		&chip8::opcode_0xBNNN,
-		&chip8::opcode_0xCXNN,
-		&chip8::opcode_0xDXYN,
-		&chip8::opcode_0xEX9E,
-		&chip8::opcode_0xEXA1,
-		&chip8::opcode_0xFX07,
-		&chip8::opcode_0xFX0A,
-		&chip8::opcode_0xFX15,
-		&chip8::opcode_0xFX18,
-		&chip8::opcode_0xFX1E,
-		&chip8::opcode_0xFX29,
-		&chip8::opcode_0xFX33,
-		&chip8::opcode_0xFX55,
-		&chip8::opcode_0xFX65
+	struct opcode_info {
+		Opcode opcode;
+		char *description;
+		opcode_impl executor;
+	};
+
+	opcode_info opcodes[NUMBER_OF_OPCODES] = {
+
+		{ _0x00E0, "Clears the screen.",															&chip8::opcode_0x00E0 },
+		{ _0x00EE, "Returns from a subroutine.",													&chip8::opcode_0x00EE },
+		{ _0x0NNN, "Calls RCA 1802 program at address NNN. Not necessary for most ROMs.",			&chip8::opcode_0x0NNN },
+		{ _0x1NNN, "Jump to address specified in 'NNN'.",											&chip8::opcode_0x1NNN },
+		{ _0x2NNN, "all subroutine (subroutine will return).",										&chip8::opcode_0x2NNN },
+		{ _0x3XNN, "Skip the next instruction if VX equals NN.", 									&chip8::opcode_0x3XNN },
+		{ _0x4XNN, "Skips the next instruction if VX doesn't equal NN.",							&chip8::opcode_0x4XNN },
+		{ _0x5XY0, "Skips the next instruction if VX equals VY.",									&chip8::opcode_0x5XY0 },
+		{ _0x6XNN, "Sets VX to NN.",																&chip8::opcode_0x6XNN },
+		{ _0x7XNN, "Adds NN to VX. (Carry flag is not changed).",									&chip8::opcode_0x7XNN },
+		{ _0x8XY0, "Sets VX to the value of VY.",													&chip8::opcode_0x8XY0 },
+		{ _0x8XY1, "Sets VX to VX or VY (Bitwise OR operation).",									&chip8::opcode_0x8XY1 },
+		{ _0x8XY2, "Sets VX to VX and VY. (Bitwise AND operation).",								&chip8::opcode_0x8XY2 },
+		{ _0x8XY3, "Sets VX to VX xor VY.",															&chip8::opcode_0x8XY3 },
+		{ _0x8XY4, "Adds VY to VX. VF=1 if carry, VF=0 if no carry.",								&chip8::opcode_0x8XY4 },
+		{ _0x8XY5, "VY is subtracted from VX. VF=0 if borrow, VF=1 if no borrow.",					&chip8::opcode_0x8XY5 },
+		{ _0x8XY6, "Shifts VY right by one. VX=new VY value, VF=LSB of VY before shift.",			&chip8::opcode_0x8XY6 },
+		{ _0x8XY7, "Sets VX to VY minus VX. VF=0 if borrow, VF=1 if no borrow.",					&chip8::opcode_0x8XY7 },
+		{ _0x8XYE, "Shifts VY left by one. VX=new VY value, VF=MSB of VY before shift.",			&chip8::opcode_0x8XYE },
+		{ _0x9XY0, "Skips the next instruction if VX doesn't equal VY.",							&chip8::opcode_0x9XY0 },
+		{ _0xANNN, "Sets I to the address NNN.",													&chip8::opcode_0xANNN },
+		{ _0xBNNN, "Jumps to the address NNN plus V0.",												&chip8::opcode_0xBNNN },
+		{ _0xCXNN, "Sets VX=result of bitwise and operation between random(0 to 255) and NN.",		&chip8::opcode_0xCXNN },
+		{ _0xDXYN, "Draw a sprite on screen (sprite=8 pixels wide, (opcode & 0x000F) pixels high)",	&chip8::opcode_0xDXYN },
+		{ _0xEX9E, "Skips the next instruction if the key stored in VX is pressed.",				&chip8::opcode_0xEX9E },
+		{ _0xEXA1, "Skips the next instruction if the key stored in VX isn't pressed.",				&chip8::opcode_0xEXA1 },
+		{ _0xFX07, "Sets VX to the value of the delay timer.",										&chip8::opcode_0xFX07 },
+		{ _0xFX0A, "A key press is awaited, and then stored in VX. Blocking-Waits for input.",		&chip8::opcode_0xFX0A },
+		{ _0xFX15, "Sets the delay timer to VX.",													&chip8::opcode_0xFX15 },
+		{ _0xFX18, "Sets the sound timer to VX.",													&chip8::opcode_0xFX18 },
+		{ _0xFX1E, "Adds VX to I. VF=1 if range overflow (I+VX>0xFFF), VF=0 if no range overflow",	&chip8::opcode_0xFX1E },
+		{ _0xFX29, "Sets I to the location of the sprite for the character in VX. Hex Chars 4x5",   &chip8::opcode_0xFX29 },
+		{ _0xFX33, "I=MSD(decimal(VX)), I+1=mid(decimal(VX)), I+2=LSB(decimal(VX)).",				&chip8::opcode_0xFX33 },
+		{ _0xFX55, "Stores V0 to VX (inclusive) starting memory[I]. I+=1 for each value written.",	&chip8::opcode_0xFX55 },
+		{ _0xFX65, "Dump to V0 to VX (inclusive) starting memory[I]. I+=1 for each value written.",	&chip8::opcode_0xFX65 }
 	};
 };
