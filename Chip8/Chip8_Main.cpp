@@ -6,7 +6,7 @@
 #define SCREEN_WIDTH 64
 #define SCREEN_HEIGHT 32
 
-int modifier = 10;
+int modifier = 10;   // screen is too small without this
 
 // window size
 int display_width = SCREEN_WIDTH * modifier;
@@ -38,7 +38,6 @@ void setupGraphics(int argc, char **argv)
 	glutDisplayFunc(display);
 	glutIdleFunc(display);
 	glutReshapeFunc(reshape_window);
-
 
 	// possible texture draw
 }
@@ -78,7 +77,16 @@ void display()
 
 void reshape_window(GLsizei h, GLsizei w)
 {
+    glClearColor(0.0f, 0.0f, 0.5f, 0.0f);
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
+    gluOrtho2D(0, w, h, 0);
+    glMatrixMode(GL_MODELVIEW);
+    glViewport(0, 0, w, h);
 
+    // Resize quad
+    display_width = w;
+    display_height = h;
 }
 
 // set the keys based on the key pressed
@@ -196,11 +204,11 @@ void keyboardUp(unsigned char key, int x, int y)
 void drawPixel(int x, int y)
 {
 	// draw a 4 sided figure with OpenGL
-	glBegin(GL_QUADS);
-		glVertex3f((x * modifier) + 0.0f, (y * modifier) + 0.0f, 0.0f);   // upper left
-		glVertex3f((x * modifier) + 0.0f, (y * modifier) + modifier, 0.0f);  // lower left
-		glVertex3f((x * modifier) + modifier, (y * modifier) + modifier, 0.0f); // lower right
-		glVertex3f((x * modifier) + modifier, (y * modifier) + 0.0f, 0.0f);  // upper right
+	glBegin(GL_POLYGON);
+		glVertex3f((x * modifier) + 0.0f,     (y * modifier) + 0.0f,     0.0f);   // upper left
+		glVertex3f((x * modifier) + 0.0f,     (y * modifier) + modifier, 0.0f);   // lower left
+		glVertex3f((x * modifier) + modifier, (y * modifier) + modifier, 0.0f);   // lower right
+		glVertex3f((x * modifier) + modifier, (y * modifier) + 0.0f,     0.0f);   // upper right
 	glEnd();
 }
 
@@ -213,7 +221,7 @@ void updateQuads()
 			// check if the gfx buffer has a pixel 
 
 			// no pixel
-			if (testChip8.gfx[y * SCREEN_WIDTH + x] == 0) {
+			if (testChip8.gfx[(y * SCREEN_WIDTH) + x] == 0) {
 				glColor3f(0.0f, 0.0f, 0.0f); // set color black
 			}
 			// pixel 
@@ -262,10 +270,10 @@ int main(int argc, char **argv)
 	char *main_args[] = { {""}, { "D:\\dev\\C++\\Chip8\\loadtest.chip8"} };
 	int result = test_loop(argc, main_args);
 
-	// wait for input...
+    // wait for input...
 	getchar();
 
-
+    return result;
 
 	// PRODUCTION
 	//return main_loop(argc, argv);
