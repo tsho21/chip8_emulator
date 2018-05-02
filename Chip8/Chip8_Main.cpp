@@ -267,13 +267,13 @@ int test_loop(int argc, char** argv)
 int main(int argc, char **argv)
 {
 	// TESTING
-	char *main_args[] = { {""}, { "D:\\dev\\C++\\Chip8\\loadtest.chip8"} };
-	int result = test_loop(argc, main_args);
+	//char *main_args[] = { {""}, { "D:\\dev\\C++\\Chip8\\loadtest.chip8"} };
+	//int result = test_loop(argc, main_args);
 
     // wait for input...
-	getchar();
+	//getchar();
 
-    return result;
+    return main_loop(argc, argv);
 
 	// PRODUCTION
 	//return main_loop(argc, argv);
