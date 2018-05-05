@@ -6,7 +6,7 @@
 #define SCREEN_WIDTH 64
 #define SCREEN_HEIGHT 32
 
-int modifier = 10;   // screen is too small without this
+int modifier = 5;   // screen is too small without this
 
 // window size
 int display_width = SCREEN_WIDTH * modifier;
@@ -93,7 +93,7 @@ void reshape_window(GLsizei h, GLsizei w)
 void drawPixel(int x, int y)
 {
 	// draw a 4 sided figure with OpenGL
-	glBegin(GL_QUADS);
+	glBegin(GL_POLYGON);
 		glVertex3f((x * modifier) + 0.0f,               (y * modifier) + 0.0f,              0.0f);    // upper left
 		glVertex3f((x * modifier) + 0.0f,               (y * modifier) + modifier + 0.0f,   0.0f);    // lower left
 		glVertex3f((x * modifier) + modifier + 0.0f,    (y * modifier) + modifier + 0.0f,   0.0f);    // lower right
