@@ -230,7 +230,7 @@ void chip8::emulateCycle()
 		exit(1);
 	}
 	else {
-		printf("Executed opcode %s\n", opcodes[opcode].description);
+		//printf("Executed opcode %s\n", opcodes[opcode].description);
 	}
 
 	// update timers
