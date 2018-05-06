@@ -191,9 +191,6 @@ void chip8::emulateCycle()
 	//  opcode = 0xA2 0xF0  
 	unsigned short raw_opcode = memory[pc] << 8 | memory[pc + 1];
 
-	// TODO: Want to call this way...
-	// map[getHash(opcode)]->opcode_impl();
-
 	// decode opcode
 	Opcode opcode = translate_opcode(raw_opcode);  // this should really just be identifed as a hash into a bucket map below
 
@@ -212,9 +209,6 @@ void chip8::emulateCycle()
 		debug_simple_msg("Unexepcted result from opcode execution, exiting...");
 		getchar();
 		exit(1);
-	}
-	else {
-		//printf("Executed opcode %s\n", opcodes[opcode].description);
 	}
 
     // update delay timer
