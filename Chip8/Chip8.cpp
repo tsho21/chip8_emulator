@@ -177,12 +177,6 @@ void chip8::initialize()
 
 void chip8::emulateCycle()
 {
-    // check delay timer
-    if (delay_timer > 0)
-    {
-        --delay_timer;
-        return; 
-    }
 
 	// FETCH OPCODE
 	// each opcode is 2 bytes long, need to get pc and pc+1 to get the full
@@ -222,6 +216,12 @@ void chip8::emulateCycle()
 	else {
 		//printf("Executed opcode %s\n", opcodes[opcode].description);
 	}
+
+    // update delay timer
+    if (delay_timer > 0)
+    {
+        --delay_timer;
+    }
 
 	// update sound timers
 	if (sound_timer > 0)
