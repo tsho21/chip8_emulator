@@ -3,14 +3,24 @@
 
 #include "GL/glut.h"
 
-#define SCREEN_WIDTH 64
-#define SCREEN_HEIGHT 32
-
 int modifier = 5;   // screen is too small without this
 
+// figure out the architecture this compiles to and then change?
+// or figure out what it is running on and change?
+// this is mainly for the delay and sound timers to make sure the program runs at the appropriate speed
+#define ARCH_MODIFIER_TIME 5000
+
+//// execution timer on top of the chip8 to make it run properly on different architecture
+//#ifdef _X86_
+//#define ARCH_MODIFIER_TIME 5000
+//#endif
+
+// timing counter
+int clock = 0; 
+
 // window size
-int display_width = SCREEN_WIDTH * modifier;
-int display_height = SCREEN_HEIGHT * modifier;
+int display_width = GFX_WIDTH * modifier;
+int display_height = GFX_HEIGHT * modifier;
 
 // glut functions
 void display();
@@ -58,6 +68,14 @@ void setupInputs()
 
 void display()
 {
+    // clock timer
+    if (clock++ < ARCH_MODIFIER_TIME) {
+        return;
+    }
+    
+    // reset clock
+    clock = 0; 
+
 	// emulate one cycle for the Chip8
 	testChip8.emulateCycle();
 
@@ -80,7 +98,7 @@ void display()
 	}
 }
 
-void reshape_window(GLsizei h, GLsizei w)
+void reshape_window(GLsizei w, GLsizei h)
 {
     // Resize display
     display_width = w;
@@ -105,12 +123,12 @@ void drawPixel(int x, int y)
 void updateQuads()
 {
 	// draw on the screen
-	for (int y = 0; y < SCREEN_HEIGHT; ++y) {
-		for (int x = 0; x < SCREEN_WIDTH; ++x) {
+	for (int y = 0; y < GFX_HEIGHT; ++y) {
+		for (int x = 0; x < GFX_WIDTH; ++x) {
 			// check if the gfx buffer has a pixel 
 
 			// no pixel
-			if (testChip8.gfx[(y * SCREEN_WIDTH) + x] == 0) {
+			if (testChip8.gfx[(y * GFX_WIDTH) + x] == 0) {
 				glColor3f(0.0f, 0.0f, 0.0f); // set color black
 			}
 			// pixel 

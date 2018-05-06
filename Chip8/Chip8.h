@@ -24,44 +24,47 @@
 #define KEY_E	67
 #define KEY_F	86
 
+#define GFX_WIDTH 64
+#define GFX_HEIGHT 32
+
 class chip8 {
 public:
 
-	// memory size
-	static unsigned const short MEMORY_SIZE = 4096;
-
 	// sprite width = 8 pixels, each pixel is 1 bit (on=1, off=0)
-	static unsigned const short SPRITE_WIDTH = 8;
+	static const unsigned short SPRITE_WIDTH = 8;
+    static const unsigned short NUMBER_OF_PIXELS = (GFX_WIDTH * GFX_HEIGHT); 
 
 	// memory
 	//  0x00 -> 0x50 = font set
 	//  0x200 = start of program memory
-	//  
-	unsigned char memory[4096];
+    static const unsigned short MEMORY_SIZE = 4096;
+	unsigned char memory[MEMORY_SIZE];
 
-	// 1 byte (8 bit) data registers  - V[0xF] or V[15] seems to be contextual -> used for bit collision, carry, borrow
-	unsigned char V[16];
+	// 1 byte (8 bit) data registers
+    static const unsigned short REGISTER_COUNT = 16;
+	unsigned char V[REGISTER_COUNT];
 
 	// index (I) and program counter (pc)
 	unsigned short I;
 	unsigned short pc;
 
 	// pixel state (1=on=white,0=off=black)
-	unsigned char gfx[64 * 32];
+	unsigned char gfx[GFX_WIDTH * GFX_HEIGHT];
 
 	// timers
 	unsigned char delay_timer;
 	unsigned char sound_timer;
 
-	// stack levels (const)
-	static unsigned const short STACK_SIZE = 16;
-
 	// stack and stack pointer (sp)
-	unsigned short stack[STACK_SIZE];
+    static const unsigned short STACK_LEVELS = 16;
+	unsigned short stack[STACK_LEVELS];
+
+    // stack pointer
 	unsigned short sp;
 
 	// key states
-	unsigned char key[16];
+    static const unsigned short KEY_STATES = 16;
+	unsigned char key[KEY_STATES];
 
 	// draw flag (if we draw next cycle)
 	unsigned short drawFlag;

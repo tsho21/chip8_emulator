@@ -2,6 +2,7 @@
 #include "stdlib.h"
 #include "Chip8.h" 
 #include "Debug.h"
+#include "time.h"
 
 chip8::chip8()
 {
@@ -147,34 +148,19 @@ void chip8::initialize()
 	sp = 0;				// reset stack pointer
 
 	 // clear display
-	for (int i = 0; i < (64 * 32); ++i)
-	{
-		gfx[i] = 0;
-	}
+    memset(gfx, 0, (GFX_WIDTH * GFX_HEIGHT));
 
 	// clear stack
-	for (int i = 0; i < STACK_SIZE; ++i)
-	{
-		stack[i] = 0;
-	}
+    memset(stack, 0, STACK_LEVELS); 
 
 	// clear registers V0 through VF
-	for (int i = 0; i < 16; ++i)
-	{
-		V[i] = 0;
-	}
+    memset(V, 0, REGISTER_COUNT); 
 
 	// clear keyset
-	for (int i = 0; i < 16; ++i)
-	{
-		key[i] = 0;
-	}
+    memset(key, 0, KEY_STATES);
 
 	// clear memory
-	for (int i = 0; i < MEMORY_SIZE; ++i)
-	{
-		memory[i] = 0;
-	}
+    memset(memory, 0, MEMORY_SIZE);
 
 	// load fontset
 	for (int i = 0; i < 80; ++i)
@@ -189,7 +175,7 @@ void chip8::initialize()
 	// signal a screen clear
 	drawFlag = true;
 
-	//srang (time(NULL)); here, not sure what for....
+	//srand (time(NULL)); // here, not sure what for....
 }
 
 void chip8::emulateCycle()
@@ -295,6 +281,9 @@ bool chip8::loadApp(char *filename)
 	{
 		memory[i + 512] = buffer[i];
 	}
+
+    fclose(ptrFile);
+    free(buffer);
 	return true;
 }
 
