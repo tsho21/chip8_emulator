@@ -2,7 +2,6 @@
 #include "stdlib.h"
 #include "Chip8.h" 
 #include "Debug.h"
-#include "time.h"
 
 chip8::chip8()
 {
@@ -171,8 +170,6 @@ void chip8::initialize()
 
 	// signal a screen clear
 	drawFlag = true;
-
-	//srand (time(NULL)); // here, not sure what for....
 }
 
 void chip8::emulateCycle()
