@@ -1,14 +1,13 @@
 #include "Chip8.h"
-#include <iostream>
-
 #include "GL/glut.h"
 
-int modifier = 5;   // screen is too small without this
+#ifdef _WIN32
+#include <Windows.h>
+#else
+#include <unistd.h>
+#endif
 
-// figure out the architecture this compiles to and then change?
-// or figure out what it is running on and change?
-// this is mainly for the delay and sound timers to make sure the program runs at the appropriate speed
-#define ARCH_MODIFIER_TIME 5000
+int modifier = 5;   // screen is too small without this
 
 //// execution timer on top of the chip8 to make it run properly on different architecture
 //#ifdef _X86_
@@ -68,13 +67,6 @@ void setupInputs()
 
 void display()
 {
-    // clock timer
-    if (clock++ < ARCH_MODIFIER_TIME) {
-        return;
-    }
-    
-    // reset clock
-    clock = 0; 
 
 	// emulate one cycle for the Chip8
 	testChip8.emulateCycle();
@@ -96,6 +88,13 @@ void display()
 		// reset the draw flag
 		testChip8.drawFlag = false;
 	}
+
+    // slow down the emulation
+#ifdef _WIN32
+    Sleep((1 / 60) * 10);
+#else
+    sleep((1 / 60) * 10);
+#endif
 }
 
 void reshape_window(GLsizei w, GLsizei h)
@@ -253,11 +252,15 @@ void keyboardUp(unsigned char key, int x, int y)
     }
 }
 
+
 // main loop
 int main_loop(int argc, char** argv) 
 {
 	// setup render system
 	setupGraphics(argc, argv);
+
+    // setup timer
+    
 
 	// register input callbacks
 	setupInputs();

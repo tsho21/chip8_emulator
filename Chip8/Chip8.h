@@ -27,6 +27,8 @@
 #define GFX_WIDTH 64
 #define GFX_HEIGHT 32
 
+typedef unsigned char byte;
+
 class chip8 {
 public:
 
@@ -38,22 +40,23 @@ public:
 	//  0x00 -> 0x50 = font set
 	//  0x200 = start of program memory
     static const unsigned short MEMORY_SIZE = 4096;
-	unsigned char memory[MEMORY_SIZE];
+	byte memory[MEMORY_SIZE];
 
 	// 1 byte (8 bit) data registers
     static const unsigned short REGISTER_COUNT = 16;
-	unsigned char V[REGISTER_COUNT];
+	byte V[REGISTER_COUNT];
 
 	// index (I) and program counter (pc)
 	unsigned short I;
 	unsigned short pc;
 
 	// pixel state (1=on=white,0=off=black)
-	unsigned char gfx[GFX_WIDTH * GFX_HEIGHT];
+	byte gfx[GFX_WIDTH * GFX_HEIGHT];
 
 	// timers
-	unsigned char delay_timer;
-	unsigned char sound_timer;
+	byte delay_timer;
+	byte sound_timer;
+    unsigned long timers_counter;
 
 	// stack and stack pointer (sp)
     static const unsigned short STACK_LEVELS = 16;
@@ -64,13 +67,13 @@ public:
 
 	// key states
     static const unsigned short KEY_STATES = 16;
-	unsigned char key[KEY_STATES];
+	byte key[KEY_STATES];
 
 	// draw flag (if we draw next cycle)
 	unsigned short drawFlag;
 
 	// font set
-	unsigned char chip8_fontset[80] =
+	byte chip8_fontset[80] =
 	{
 		0xF0, 0x90, 0x90, 0x90, 0xF0, // 0  addr 0x00
 		0x20, 0x60, 0x20, 0x20, 0x70, // 1  addr 0x05
@@ -97,6 +100,8 @@ public:
 	void emulateCycle();
 	bool loadApp(char *filename);
 	void setKeys();
+    void reset_timers_counter();
+    void updateTimers();
 
 	template <typename T>
 	void debug_fmt_msg(char formatted_message[], T values);
