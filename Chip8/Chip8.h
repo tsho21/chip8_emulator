@@ -27,9 +27,6 @@
 #define GFX_WIDTH 64
 #define GFX_HEIGHT 32
 
-#define TARGET_CLOCK_SPEED 540
-#define SCREEN_REFRESH_RATE 60
-
 typedef unsigned char byte;
 
 class chip8 {
@@ -59,6 +56,7 @@ public:
 	// timers
 	byte delay_timer;
 	byte sound_timer;
+    unsigned long timers_counter;
 
 	// stack and stack pointer (sp)
     static const unsigned short STACK_LEVELS = 16;
@@ -102,6 +100,7 @@ public:
 	void emulateCycle();
 	bool loadApp(char *filename);
 	void setKeys();
+    void reset_timers_counter();
     void updateTimers();
 
 	template <typename T>
