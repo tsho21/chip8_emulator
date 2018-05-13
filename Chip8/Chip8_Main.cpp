@@ -1,6 +1,6 @@
 #include "Chip8.h"
-#include "GL/glut.h"
 #include "Timer.h"
+#include "GL/glut.h"
 
 int modifier = 10;   // screen is too small without this
 

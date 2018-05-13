@@ -1,4 +1,7 @@
 #pragma once
+#ifndef _TIMER_H
+#define _TIMER_H
+
 #include <chrono>
 
 #define NANO_SECONDS_PER_HZ 1000000000LL
@@ -17,3 +20,5 @@ public:
     void end();
     long long elapsed();
 };
+
+#endif

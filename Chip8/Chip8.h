@@ -1,4 +1,8 @@
 #pragma once
+#ifndef _CHIP8_H
+#define _CHIP8_H
+
+#include "Common.h"
 
 // keypad (hex-based), 0 - F | 16 total keys as shown below (left side of standard keyboard)
 //	1	49		2	50		3	51		4	52
@@ -30,52 +34,50 @@
 #define TARGET_CLOCK_SPEED 540
 #define SCREEN_REFRESH_RATE 60
 
-typedef unsigned char byte;
-
 class chip8 {
 public:
 
 	// sprite width = 8 pixels, each pixel is 1 bit (on=1, off=0)
-	static const unsigned short SPRITE_WIDTH = 8;
-    static const unsigned short NUMBER_OF_PIXELS = (GFX_WIDTH * GFX_HEIGHT); 
+	static const uint16 SPRITE_WIDTH = 8;
+    static const uint16 NUMBER_OF_PIXELS = (GFX_WIDTH * GFX_HEIGHT); 
 
 	// memory
 	//  0x00 -> 0x50 = font set
 	//  0x200 = start of program memory
-    static const unsigned short MEMORY_SIZE = 4096;
-	byte memory[MEMORY_SIZE];
+    static const uint16 MEMORY_SIZE = 4096;
+	uint8 memory[MEMORY_SIZE];
 
-	// 1 byte (8 bit) data registers
-    static const unsigned short REGISTER_COUNT = 16;
-	byte V[REGISTER_COUNT];
+	// 1 uint8 (8 bit) data registers
+    static const uint16 REGISTER_COUNT = 16;
+	uint8 V[REGISTER_COUNT];
 
 	// index (I) and program counter (pc)
-	unsigned short I;
-	unsigned short pc;
+	uint16 I;
+	uint16 pc;
 
 	// pixel state (1=on=white,0=off=black)
-	byte gfx[GFX_WIDTH * GFX_HEIGHT];
+	uint8 gfx[GFX_WIDTH * GFX_HEIGHT];
 
 	// timers
-	byte delay_timer;
-	byte sound_timer;
+	uint8 delay_timer;
+	uint8 sound_timer;
 
 	// stack and stack pointer (sp)
-    static const unsigned short STACK_LEVELS = 16;
-	unsigned short stack[STACK_LEVELS];
+    static const uint16 STACK_LEVELS = 16;
+	uint16 stack[STACK_LEVELS];
 
     // stack pointer
-	unsigned short sp;
+	uint16 sp;
 
 	// key states
-    static const unsigned short KEY_STATES = 16;
-	byte key[KEY_STATES];
+    static const uint16 KEY_STATES = 16;
+	uint8 key[KEY_STATES];
 
 	// draw flag (if we draw next cycle)
-	unsigned short drawFlag;
+	uint16 drawFlag;
 
 	// font set
-	byte chip8_fontset[80] =
+	uint8 chip8_fontset[80] =
 	{
 		0xF0, 0x90, 0x90, 0x90, 0xF0, // 0  addr 0x00
 		0x20, 0x60, 0x20, 0x20, 0x70, // 1  addr 0x05
@@ -161,47 +163,47 @@ public:
 	
 
 	// translate opcode
-	Opcode translate_opcode(unsigned short);
+	Opcode translate_opcode(uint16);
 
 	// opcode routines
-	bool opcode_0x00E0(unsigned short);
-	bool opcode_0x00EE(unsigned short);
-	bool opcode_0x0NNN(unsigned short);
-	bool opcode_0x1NNN(unsigned short);
-	bool opcode_0x2NNN(unsigned short);
-	bool opcode_0x3XNN(unsigned short);
-	bool opcode_0x4XNN(unsigned short);
-	bool opcode_0x5XY0(unsigned short);
-	bool opcode_0x6XNN(unsigned short);
-	bool opcode_0x7XNN(unsigned short);
-	bool opcode_0x8XY0(unsigned short);
-	bool opcode_0x8XY1(unsigned short);
-	bool opcode_0x8XY2(unsigned short);
-	bool opcode_0x8XY3(unsigned short);
-	bool opcode_0x8XY4(unsigned short);
-	bool opcode_0x8XY5(unsigned short);
-	bool opcode_0x8XY6(unsigned short);
-	bool opcode_0x8XY7(unsigned short);
-	bool opcode_0x8XYE(unsigned short);
-	bool opcode_0x9XY0(unsigned short);
-	bool opcode_0xANNN(unsigned short);
-	bool opcode_0xBNNN(unsigned short);
-	bool opcode_0xCXNN(unsigned short);
-	bool opcode_0xDXYN(unsigned short);
-	bool opcode_0xEX9E(unsigned short);
-	bool opcode_0xEXA1(unsigned short);
-	bool opcode_0xFX07(unsigned short);
-	bool opcode_0xFX0A(unsigned short);
-	bool opcode_0xFX15(unsigned short);
-	bool opcode_0xFX18(unsigned short);
-	bool opcode_0xFX1E(unsigned short);
-	bool opcode_0xFX29(unsigned short);
-	bool opcode_0xFX33(unsigned short);
-	bool opcode_0xFX55(unsigned short);
-	bool opcode_0xFX65(unsigned short);
+	bool opcode_0x00E0(uint16);
+	bool opcode_0x00EE(uint16);
+	bool opcode_0x0NNN(uint16);
+	bool opcode_0x1NNN(uint16);
+	bool opcode_0x2NNN(uint16);
+	bool opcode_0x3XNN(uint16);
+	bool opcode_0x4XNN(uint16);
+	bool opcode_0x5XY0(uint16);
+	bool opcode_0x6XNN(uint16);
+	bool opcode_0x7XNN(uint16);
+	bool opcode_0x8XY0(uint16);
+	bool opcode_0x8XY1(uint16);
+	bool opcode_0x8XY2(uint16);
+	bool opcode_0x8XY3(uint16);
+	bool opcode_0x8XY4(uint16);
+	bool opcode_0x8XY5(uint16);
+	bool opcode_0x8XY6(uint16);
+	bool opcode_0x8XY7(uint16);
+	bool opcode_0x8XYE(uint16);
+	bool opcode_0x9XY0(uint16);
+	bool opcode_0xANNN(uint16);
+	bool opcode_0xBNNN(uint16);
+	bool opcode_0xCXNN(uint16);
+	bool opcode_0xDXYN(uint16);
+	bool opcode_0xEX9E(uint16);
+	bool opcode_0xEXA1(uint16);
+	bool opcode_0xFX07(uint16);
+	bool opcode_0xFX0A(uint16);
+	bool opcode_0xFX15(uint16);
+	bool opcode_0xFX18(uint16);
+	bool opcode_0xFX1E(uint16);
+	bool opcode_0xFX29(uint16);
+	bool opcode_0xFX33(uint16);
+	bool opcode_0xFX55(uint16);
+	bool opcode_0xFX65(uint16);
 
 	// opcode information
-	typedef bool(chip8::*opcode_impl)(unsigned short);
+	typedef bool(chip8::*opcode_impl)(uint16);
 	struct opcode_info {
 		Opcode opcode;
 		char *description;
@@ -247,3 +249,5 @@ public:
 		{ _0xFX65, "Dump to V0 to VX (inclusive) starting memory[I]. I+=1 for each value written.", &chip8::opcode_0xFX65 }
 	};
 };
+
+#endif

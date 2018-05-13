@@ -116,6 +116,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="Chip8.h" />
+    <ClInclude Include="Common.h" />
     <ClInclude Include="Timer.h" />
     <ClInclude Include="Debug.h" />
   </ItemGroup>
