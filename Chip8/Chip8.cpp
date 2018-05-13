@@ -240,6 +240,11 @@ bool chip8::loadApp(char *filename)
 	rewind(ptrFile);
 	debug_fmt_msg("Filesize found to be: %d", bufferSize);
 
+    // check the file won't overrun the memory
+    if (bufferSize > (MEMORY_SIZE - 512)) {
+        debug_fmt_msg("Filesize too large for available RAM: %l", bufferSize);
+    }
+
 	// buffer should have 'bufferSize' number of bytes for the system
 	char *buffer = (char*)malloc(sizeof(char) * bufferSize);
 	if (buffer == NULL)
