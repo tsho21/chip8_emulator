@@ -92,7 +92,7 @@ void display()
     // check elapsed and wait to slow the emulation down to TARGET_CLOCK_SPEED (540hz)
     timer.end();
     long long elapsed_ns = timer.elapsed();
-    while (elapsed_ns < (1000000000LL / TARGET_CLOCK_SPEED)) {
+    while (elapsed_ns < (NANO_SECONDS_PER_HZ / TARGET_CLOCK_SPEED)) {
         timer.end();
         elapsed_ns = timer.elapsed();
     }

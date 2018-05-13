@@ -1,6 +1,8 @@
 #pragma once
 #include <chrono>
 
+#define NANO_SECONDS_PER_HZ 1000000000LL
+
 typedef std::chrono::steady_clock Clock;
 
 class Timer {
