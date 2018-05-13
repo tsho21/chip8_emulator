@@ -148,19 +148,19 @@ void chip8::initialize()
 	sp = 0;				// reset stack pointer
 
 	 // clear display
-    memset(gfx, 0, (GFX_WIDTH * GFX_HEIGHT));
+    memset(gfx, 0, sizeof(uint8) * (GFX_WIDTH * GFX_HEIGHT));
 
 	// clear stack
     memset(stack, 0, STACK_LEVELS); 
 
 	// clear registers V0 through VF
-    memset(V, 0, REGISTER_COUNT); 
+    memset(V, 0, sizeof(uint8) * REGISTER_COUNT); 
 
 	// clear keyset
-    memset(key, 0, KEY_STATES);
+    memset(key, 0, sizeof(uint8) * KEY_STATES);
 
 	// clear memory
-    memset(memory, 0, MEMORY_SIZE);
+    memset(memory, 0, sizeof(uint8) * MEMORY_SIZE);
 
 	// load fontset
     memcpy(memory, chip8_fontset, 80);
@@ -320,7 +320,7 @@ void chip8::debug_fmt_msg(char formatted_message[], T object)
 
 // opcode 0x00E0 -> Clears the screen
 bool chip8::opcode_0x00E0(uint16 opcode) {
-    memset(gfx, 0, (GFX_WIDTH * GFX_HEIGHT));
+    memset(gfx, 0, sizeof(uint8) * (GFX_WIDTH * GFX_HEIGHT));
 	drawFlag = true;
 	pc += 2;
 	return true; 
