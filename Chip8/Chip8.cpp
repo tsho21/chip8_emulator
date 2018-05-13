@@ -167,7 +167,6 @@ void chip8::initialize()
 	// reset timers
 	delay_timer = 0;
 	sound_timer = 0;
-    reset_timers_counter();
 
 	// signal a screen clear
 	drawFlag = true;
@@ -208,9 +207,6 @@ void chip8::emulateCycle()
 		getchar();
 		exit(1);
 	}
-
-    // update timers
-    updateTimers();
 }
 
 bool chip8::loadApp(char *filename)
@@ -263,37 +259,22 @@ bool chip8::loadApp(char *filename)
 	return true;
 }
 
-// TODO:  Figure out what this value should be
-void chip8::reset_timers_counter() 
-{
-    timers_counter = 16666L;
-}
-
 void chip8::updateTimers() 
 {
-    // check the timers counter (update ever 60hz)
-    if (timers_counter <= 0) {
-        // update delay timer
-        if (delay_timer > 0)
-        {
-            --delay_timer;
-        }
-
-        // update sound timers
-        if (sound_timer > 0)
-        {
-            if (sound_timer == 1)
-            {
-                debug_simple_msg("BEEP!");
-                --sound_timer;
-            }
-        }
-        
-        reset_timers_counter();
+    // update delay timer
+    if (delay_timer > 0)
+    {
+        --delay_timer;
     }
-    else {
-        // reduce timers counter
-        timers_counter--;
+
+    // update sound timers
+    if (sound_timer > 0)
+    {
+        if (sound_timer == 1)
+        {
+            debug_simple_msg("BEEP!");
+            --sound_timer;
+        }
     }
 }
 

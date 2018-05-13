@@ -116,11 +116,13 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="Chip8.h" />
+    <ClInclude Include="Timer.h" />
     <ClInclude Include="Debug.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Chip8.cpp" />
     <ClCompile Include="Chip8_Main.cpp" />
+    <ClCompile Include="Timer.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
