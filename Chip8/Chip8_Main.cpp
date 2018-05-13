@@ -1,21 +1,8 @@
 #include "Chip8.h"
 #include "GL/glut.h"
+#include "Timer.h"
 
-#ifdef _WIN32
-#include <Windows.h>
-#else
-#include <unistd.h>
-#endif
-
-int modifier = 5;   // screen is too small without this
-
-//// execution timer on top of the chip8 to make it run properly on different architecture
-//#ifdef _X86_
-//#define ARCH_MODIFIER_TIME 5000
-//#endif
-
-// timing counter
-int clock = 0; 
+int modifier = 10;   // screen is too small without this
 
 // window size
 int display_width = GFX_WIDTH * modifier;
@@ -29,11 +16,14 @@ void reshape_window(GLsizei w, GLsizei h);
 void keyboardUp(unsigned char key, int x, int y);
 void keyboardDown(unsigned char key, int x, int y);
 
-chip8 testChip8;
+// the chip to use 
+chip8 emu_chip;
 
+// cycle / clock timer
+Timer timer;
+int instruction_count = 0;
 
 // Chip8 Graphics Setup Calls
-
 void setupGraphics(int argc, char **argv)
 {
 	// Setup OpenGL
@@ -68,11 +58,21 @@ void setupInputs()
 void display()
 {
 
+    // TODO:  Lock emulation cycles to vertical refresh rate (60 FPS)
+    timer.start();
+    ++instruction_count;
+
+    if (instruction_count == (TARGET_CLOCK_SPEED / SCREEN_REFRESH_RATE)) {
+        // update timers
+        emu_chip.updateTimers();
+        instruction_count = 0;
+    }
+
 	// emulate one cycle for the Chip8
-	testChip8.emulateCycle();
+	emu_chip.emulateCycle();
 
 	// check the drawFlag to determine if we need to draw anything
-	if (testChip8.drawFlag) {
+	if (emu_chip.drawFlag) {
 
 		// draw routine
 
@@ -86,15 +86,16 @@ void display()
 		glutSwapBuffers();
 
 		// reset the draw flag
-		testChip8.drawFlag = false;
+		emu_chip.drawFlag = false;
 	}
 
-    // slow down the emulation
-#ifdef _WIN32
-    Sleep((1 / 60) * 10);
-#else
-    sleep((1 / 60) * 10);
-#endif
+    // check elapsed and wait to slow the emulation down to TARGET_CLOCK_SPEED (540hz)
+    timer.end();
+    long long elapsed_ns = timer.elapsed();
+    while (elapsed_ns < (1000000000LL / TARGET_CLOCK_SPEED)) {
+        timer.end();
+        elapsed_ns = timer.elapsed();
+    }
 }
 
 void reshape_window(GLsizei w, GLsizei h)
@@ -127,7 +128,7 @@ void updateQuads()
 			// check if the gfx buffer has a pixel 
 
 			// no pixel
-			if (testChip8.gfx[(y * GFX_WIDTH) + x] == 0) {
+			if (emu_chip.gfx[(y * GFX_WIDTH) + x] == 0) {
 				glColor3f(0.0f, 0.0f, 0.0f); // set color black
 			}
 			// pixel 
@@ -145,57 +146,57 @@ void keyboardDown(unsigned char key, int x, int y)
 {
     // exit = esc key = 27
     if (key == 27) {
-        testChip8.debug_simple_msg("ESC key pressed - exiting program!");
+        emu_chip.debug_simple_msg("ESC key pressed - exiting program!");
         exit(0);
     }
 
     if (key == KEY_0) {
-        testChip8.key[0x0] = 1;
+        emu_chip.key[0x0] = 1;
     }
     else if (key == KEY_1) {
-        testChip8.key[0x1] = 1;
+        emu_chip.key[0x1] = 1;
     }
     else if (key == KEY_2) {
-        testChip8.key[0x2] = 1;
+        emu_chip.key[0x2] = 1;
     }
     else if (key == KEY_3) {
-        testChip8.key[0x3] = 1;
+        emu_chip.key[0x3] = 1;
     }
     else if (key == KEY_4) {
-        testChip8.key[0x4] = 1;
+        emu_chip.key[0x4] = 1;
     }
     else if (key == KEY_5) {
-        testChip8.key[0x5] = 1;
+        emu_chip.key[0x5] = 1;
     }
     else if (key == KEY_6) {
-        testChip8.key[0x6] = 1;
+        emu_chip.key[0x6] = 1;
     }
     else if (key == KEY_7) {
-        testChip8.key[0x7] = 1;
+        emu_chip.key[0x7] = 1;
     }
     else if (key == KEY_8) {
-        testChip8.key[0x8] = 1;
+        emu_chip.key[0x8] = 1;
     }
     else if (key == KEY_9) {
-        testChip8.key[0x9] = 1;
+        emu_chip.key[0x9] = 1;
     }
     else if (key == KEY_A) {
-        testChip8.key[0xA] = 1;
+        emu_chip.key[0xA] = 1;
     }
     else if (key == KEY_B) {
-        testChip8.key[0xB] = 1;
+        emu_chip.key[0xB] = 1;
     }
     else if (key == KEY_C) {
-        testChip8.key[0xC] = 1;
+        emu_chip.key[0xC] = 1;
     }
     else if (key == KEY_D) {
-        testChip8.key[0xD] = 1;
+        emu_chip.key[0xD] = 1;
     }
     else if (key == KEY_E) {
-        testChip8.key[0xE] = 1;
+        emu_chip.key[0xE] = 1;
     }
     else if (key == KEY_F) {
-        testChip8.key[0xF] = 1;
+        emu_chip.key[0xF] = 1;
     }
 }
 
@@ -203,52 +204,52 @@ void keyboardDown(unsigned char key, int x, int y)
 void keyboardUp(unsigned char key, int x, int y)
 {
     if (key == KEY_0) {
-        testChip8.key[0x0] = 0;
+        emu_chip.key[0x0] = 0;
     }
     else if (key == KEY_1) {
-        testChip8.key[0x1] = 0;
+        emu_chip.key[0x1] = 0;
     }
     else if (key == KEY_2) {
-        testChip8.key[0x2] = 0;
+        emu_chip.key[0x2] = 0;
     }
     else if (key == KEY_3) {
-        testChip8.key[0x3] = 0;
+        emu_chip.key[0x3] = 0;
     }
     else if (key == KEY_4) {
-        testChip8.key[0x4] = 0;
+        emu_chip.key[0x4] = 0;
     }
     else if (key == KEY_5) {
-        testChip8.key[0x5] = 0;
+        emu_chip.key[0x5] = 0;
     }
     else if (key == KEY_6) {
-        testChip8.key[0x6] = 0;
+        emu_chip.key[0x6] = 0;
     }
     else if (key == KEY_7) {
-        testChip8.key[0x7] = 0;
+        emu_chip.key[0x7] = 0;
     }
     else if (key == KEY_8) {
-        testChip8.key[0x8] = 0;
+        emu_chip.key[0x8] = 0;
     }
     else if (key == KEY_9) {
-        testChip8.key[0x9] = 0;
+        emu_chip.key[0x9] = 0;
     }
     else if (key == KEY_A) {
-        testChip8.key[0xA] = 0;
+        emu_chip.key[0xA] = 0;
     }
     else if (key == KEY_B) {
-        testChip8.key[0xB] = 0;
+        emu_chip.key[0xB] = 0;
     }
     else if (key == KEY_C) {
-        testChip8.key[0xC] = 0;
+        emu_chip.key[0xC] = 0;
     }
     else if (key == KEY_D) {
-        testChip8.key[0xD] = 0;
+        emu_chip.key[0xD] = 0;
     }
     else if (key == KEY_E) {
-        testChip8.key[0xE] = 0;
+        emu_chip.key[0xE] = 0;
     }
     else if (key == KEY_F) {
-        testChip8.key[0xF] = 0;
+        emu_chip.key[0xF] = 0;
     }
 }
 
@@ -266,13 +267,13 @@ int main_loop(int argc, char** argv)
 	setupInputs();
 
 	// init the chip8 system
-	testChip8.initialize();
+	emu_chip.initialize();
 
 	// load the game into memory
 	// TODO:  Make this selectable vai a UI
-	if (!testChip8.loadApp(argv[1]))
+	if (!emu_chip.loadApp(argv[1]))
 	{
-		testChip8.debug_simple_msg("Error reading the file provided!");
+		emu_chip.debug_simple_msg("Error reading the file provided!");
 		return 1;
 	}
 
