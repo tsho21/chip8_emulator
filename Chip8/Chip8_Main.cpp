@@ -2,11 +2,11 @@
 #include "Timer.h"
 #include "GL/glut.h"
 
-int modifier = 10;   // screen is too small without this
+int pixel_size = 10;
 
 // window size
-int display_width = GFX_WIDTH * modifier;
-int display_height = GFX_HEIGHT * modifier;
+int display_width = GFX_WIDTH * pixel_size;
+int display_height = GFX_HEIGHT * pixel_size;
 
 // glut functions
 void display();
@@ -112,10 +112,10 @@ void drawPixel(int x, int y)
 {
 	// draw a 4 sided figure with OpenGL
 	glBegin(GL_POLYGON);
-		glVertex3f((x * modifier) + 0.0f,               (y * modifier) + 0.0f,              0.0f);    // upper left
-		glVertex3f((x * modifier) + 0.0f,               (y * modifier) + modifier + 0.0f,   0.0f);    // lower left
-		glVertex3f((x * modifier) + modifier + 0.0f,    (y * modifier) + modifier + 0.0f,   0.0f);    // lower right
-		glVertex3f((x * modifier) + modifier + 0.0f,    (y * modifier) + 0.0f,              0.0f);    // upper right
+		glVertex3f((x * pixel_size) + 0.0f,               (y * pixel_size) + 0.0f,              0.0f);    // upper left
+		glVertex3f((x * pixel_size) + 0.0f,               (y * pixel_size) + pixel_size + 0.0f,   0.0f);    // lower left
+		glVertex3f((x * pixel_size) + pixel_size + 0.0f,    (y * pixel_size) + pixel_size + 0.0f,   0.0f);    // lower right
+		glVertex3f((x * pixel_size) + pixel_size + 0.0f,    (y * pixel_size) + 0.0f,              0.0f);    // upper right
 	glEnd();
 }
 
