@@ -217,9 +217,17 @@ bool chip8::loadApp(char *filename)
 
 	debug_fmt_msg("Loading filename: %s", filename);
 
+#ifdef DEBUG
+    if (filename == NULL && DEBUG) {
+        filename = DEFAULT_APP;
+        debug_fmt_msg("DEBUG => Loading filename: %s", filename);
+    }
+#endif
+
 	// open file for reaching in binary mode (do not map end of line)
 	FILE *ptrFile = NULL;
 	fopen_s(&ptrFile, filename, "rb");
+
 	if (ptrFile == NULL)
 	{
 		debug_fmt_msg("Filename %s does not exist!", filename);
@@ -307,9 +315,7 @@ void chip8::debug_fmt_msg(char formatted_message[], T object)
 
 // opcode 0x00E0 -> Clears the screen
 bool chip8::opcode_0x00E0(uint16 opcode) {
-	for (int i = 0; i < (64 * 32); ++i) {
-		gfx[i] = 0x0;
-	}
+    memset(gfx, 0, (GFX_WIDTH * GFX_HEIGHT));
 	drawFlag = true;
 	pc += 2;
 	return true; 
