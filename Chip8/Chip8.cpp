@@ -1,5 +1,6 @@
 #include "stdio.h"  // debug and loader only
 #include "stdlib.h"
+#include "time.h"
 #include "Common.h"
 #include "Chip8.h"
 #include "Debug.h"
@@ -171,6 +172,8 @@ void chip8::initialize()
 
 	// signal a screen clear
 	drawFlag = true;
+
+    srand(time(NULL));
 }
 
 void chip8::emulateCycle()
@@ -287,8 +290,8 @@ void chip8::updateTimers()
         if (sound_timer == 1)
         {
             debug_simple_msg("BEEP!");
-            --sound_timer;
         }
+        --sound_timer;
     }
 }
 
