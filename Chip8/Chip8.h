@@ -30,6 +30,7 @@
 
 #define GFX_WIDTH 64
 #define GFX_HEIGHT 32
+#define GFX_SIZE ((GFX_WIDTH) * (GFX_HEIGHT))
 
 #define TARGET_CLOCK_SPEED 540
 #define SCREEN_REFRESH_RATE 60
@@ -38,7 +39,7 @@ class chip8 {
 public:
 
 	// sprite width = 8 pixels, each pixel is 1 bit (on=1, off=0)
-	static const uint16 SPRITE_WIDTH = 8;
+	static const uint8 SPRITE_WIDTH = 8;
     static const uint16 NUMBER_OF_PIXELS = (GFX_WIDTH * GFX_HEIGHT); 
 
 	// memory

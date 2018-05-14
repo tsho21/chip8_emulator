@@ -4,7 +4,7 @@
 
 #include <stdint.h>
 
-#define NTH_BIT_OF_BYTE(b, bit) (((b) >> (bit)) & 1)
+#define NTH_BIT_OF_BYTE(b, bit) (((b) >> (bit)) & 0x1)   
 
 typedef uint8_t uint8;
 typedef uint16_t uint16;

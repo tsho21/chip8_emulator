@@ -117,12 +117,12 @@ void reshape_window(GLsizei w, GLsizei h)
 void drawPixel(int x, int y)
 {
 	// draw a 4 sided figure with OpenGL
-	glBegin(GL_POLYGON);
-		glVertex3f((x * pixel_size) + 0.0f,               (y * pixel_size) + 0.0f,              0.0f);    // upper left
-		glVertex3f((x * pixel_size) + 0.0f,               (y * pixel_size) + pixel_size + 0.0f,   0.0f);    // lower left
-		glVertex3f((x * pixel_size) + pixel_size + 0.0f,    (y * pixel_size) + pixel_size + 0.0f,   0.0f);    // lower right
-		glVertex3f((x * pixel_size) + pixel_size + 0.0f,    (y * pixel_size) + 0.0f,              0.0f);    // upper right
-	glEnd();
+    glBegin(GL_QUADS);
+        glVertex3f((x * pixel_size) + 0.0f, (y * pixel_size) + 0.0f, 0.0f);    // upper left
+        glVertex3f((x * pixel_size) + 0.0f, (y * pixel_size) + pixel_size + 0.0f, 0.0f);    // lower left
+        glVertex3f((x * pixel_size) + pixel_size + 0.0f, (y * pixel_size) + pixel_size + 0.0f, 0.0f);    // lower right
+        glVertex3f((x * pixel_size) + pixel_size + 0.0f, (y * pixel_size) + 0.0f, 0.0f);    // upper right
+    glEnd();
 }
 
 // draw quads -- using global chip8 object
@@ -265,9 +265,7 @@ int main_loop(int argc, char** argv)
 {
 	// setup render system
 	setupGraphics(argc, argv);
-
-    // setup timer
-    
+   
 
 	// register input callbacks
 	setupInputs();

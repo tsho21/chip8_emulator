@@ -530,13 +530,22 @@ bool chip8::opcode_0xCXNN(uint16 opcode) {
 }
 
 // opcodes 0xDXYN ->  Display n-byte sprite starting at memory location I at (Vx, Vy), set VF = collision
+//                    Pixels are drawn from the byte in memory starting MSB to LSB:
+//                    The 'height' fo the pixel is determined by how many bytes -> 1 byte = 1 row, 2 bytes = 2 rows, etc...
+//                    Example 2 byte sprite:
+//                          0b01100001 0b10101001
+//                          
+//                          if bit_index = 0..7
+//                          col (x coordinate) = col (or x) + (7 - bit_index) ==> MSB to LSB
+//                          row (y coordinate) = row (or y) + byte_index
 bool chip8::opcode_0xDXYN(uint16 opcode) {
-	uint16 row = V[(opcode & 0x0F00) >> 8];
-	uint16 col = V[(opcode & 0x00F0) >> 4];
-	uint16 n_bytes = opcode & 0x000F;
-    uint16 byte_index;
-    uint16 bit_index;
-	uint16 byte;
+
+    uint8 col = V[(opcode & 0x0F00) >> 8];
+    uint8 row = V[(opcode & 0x00F0) >> 4];
+    uint8 n_bytes = opcode & 0x000F;
+    uint8 byte_index;
+    uint8 bit_index;
+    uint8 byte;
 
 	// reset register VF (this is the drawFlag and pixel collision register - status register)
 	V[0xF] = 0;
@@ -551,12 +560,13 @@ bool chip8::opcode_0xDXYN(uint16 opcode) {
 		for (bit_index = 0; bit_index < SPRITE_WIDTH; ++bit_index) {
 
             // get the next bit to check
-            uint8 draw_bit = NTH_BIT_OF_BYTE(byte, bit_index);
+            uint8 draw_bit = NTH_BIT_OF_BYTE(byte, bit_index); 
 
             // get the current pixel bit on screen
-            uint8 *pixel_bit = &gfx[(row + bit_index) + ((col + byte_index) * GFX_WIDTH)];
+            uint16 pixel_index = ((col + (7 - bit_index) + ((row + byte_index) * GFX_WIDTH))) % (GFX_SIZE);
+            uint8 *pixel_bit = &gfx[pixel_index];
 
-            if (draw_bit == 1 && *pixel_bit == 1) {
+            if(draw_bit == 1 && *pixel_bit == 1) {
                 // collision detection
                 V[0xF] = 1; 
             }
