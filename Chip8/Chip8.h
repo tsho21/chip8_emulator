@@ -56,7 +56,7 @@ public:
 	uint16 pc;
 
 	// pixel state (1=on=white,0=off=black)
-	uint8 gfx[GFX_WIDTH * GFX_HEIGHT];
+	uint8 gfx[GFX_SIZE];
 
 	// timers
 	uint8 delay_timer;
