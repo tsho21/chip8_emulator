@@ -148,7 +148,7 @@ void chip8::initialize()
 	sp = 0;				// reset stack pointer
 
 	 // clear display
-    memset(gfx, 0, sizeof(uint8) * (GFX_WIDTH * GFX_HEIGHT));
+    memset(gfx, 0, sizeof(uint8) * GFX_SIZE);
 
 	// clear stack
     memset(stack, 0, STACK_LEVELS); 

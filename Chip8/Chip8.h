@@ -40,7 +40,6 @@ public:
 
 	// sprite width = 8 pixels, each pixel is 1 bit (on=1, off=0)
 	static const uint8 SPRITE_WIDTH = 8;
-    static const uint16 NUMBER_OF_PIXELS = (GFX_WIDTH * GFX_HEIGHT); 
 
 	// memory
 	//  0x00 -> 0x50 = font set
