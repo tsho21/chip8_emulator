@@ -163,7 +163,7 @@ void chip8::initialize()
     memset(memory, 0, sizeof(uint8) * MEMORY_SIZE);
 
 	// load fontset
-    memcpy(memory, chip8_fontset, 80);
+    memcpy(memory, chip8_fontset, sizeof(uint8) * 80);
 
 	// reset timers
 	delay_timer = 0;

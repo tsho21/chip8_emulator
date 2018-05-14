@@ -2,13 +2,14 @@
 #include "Timer.h"
 #include "GL/glut.h"
 
-int pixel_size = 10;
+int pixel_size = 5;
 
 // window size
 int display_width = GFX_WIDTH * pixel_size;
 int display_height = GFX_HEIGHT * pixel_size;
 
 // glut functions
+void emulate_loop();
 void display();
 void drawPixel(int, int);
 void updateQuads();
@@ -40,7 +41,7 @@ void setupGraphics(int argc, char **argv)
     gluOrtho2D(0.0, display_width, display_height, 0.0); // this is projecting down the Y access
 
 	glutDisplayFunc(display);
-	glutIdleFunc(display);
+	glutIdleFunc(emulate_loop);
 	glutReshapeFunc(reshape_window);
 
 	// possible texture draw
@@ -55,10 +56,9 @@ void setupInputs()
 
 // GLUT Callbacks
 
-void display()
+void emulate_loop() 
 {
-
-    // TODO:  Lock emulation cycles to vertical refresh rate (60 FPS)
+    // lock clock to 540hz
     timer.start();
     ++instruction_count;
 
@@ -68,26 +68,18 @@ void display()
         instruction_count = 0;
     }
 
-	// emulate one cycle for the Chip8
-	emu_chip.emulateCycle();
+    // emulate one cycle for the Chip8
+    emu_chip.emulateCycle();
 
-	// check the drawFlag to determine if we need to draw anything
-	if (emu_chip.drawFlag) {
+    // check the drawFlag to determine if we need to draw anything
+    if (emu_chip.drawFlag) {
 
-		// draw routine
+        // draw routine
+        display();
 
-		// clear the screen
-		glClear(GL_COLOR_BUFFER_BIT);
-
-		// update the 4 vertice shapes (quads) on screen
-		updateQuads();
-
-		// swap buffers 
-		glutSwapBuffers();
-
-		// reset the draw flag
-		emu_chip.drawFlag = false;
-	}
+        // reset the draw flag
+        emu_chip.drawFlag = false;
+    }
 
     // check elapsed and wait to slow the emulation down to TARGET_CLOCK_SPEED (540hz)
     timer.end();
@@ -96,6 +88,20 @@ void display()
         timer.end();
         elapsed_ns = timer.elapsed();
     }
+}
+
+void display()
+{
+    // draw routine
+
+    // clear the screen
+    glClear(GL_COLOR_BUFFER_BIT);
+
+    // update the 4 vertice shapes (quads) on screen
+    updateQuads();
+
+    // swap buffers 
+    glutSwapBuffers();
 }
 
 void reshape_window(GLsizei w, GLsizei h)
