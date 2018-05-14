@@ -2,7 +2,7 @@
 #include "Timer.h"
 #include "GL/glut.h"
 
-int pixel_size = 5;
+int pixel_size = 10;
 
 // window size
 int display_width = GFX_WIDTH * pixel_size;
@@ -43,8 +43,6 @@ void setupGraphics(int argc, char **argv)
 	glutDisplayFunc(display);
 	glutIdleFunc(emulate_loop);
 	glutReshapeFunc(reshape_window);
-
-	// possible texture draw
 }
 
 void setupInputs()
@@ -155,108 +153,50 @@ void keyboardDown(unsigned char key, int x, int y)
         emu_chip.debug_simple_msg("ESC key pressed - exiting program!");
         exit(0);
     }
+    
+    if (key == '1')         { emu_chip.key[0x1] = 1; }
+    else if (key == '2')    { emu_chip.key[0x2] = 1; }
+    else if (key == '3')    { emu_chip.key[0x3] = 1; }
+    else if (key == '4')    { emu_chip.key[0xC] = 1; }
 
-    if (key == KEY_0) {
-        emu_chip.key[0x0] = 1;
-    }
-    else if (key == KEY_1) {
-        emu_chip.key[0x1] = 1;
-    }
-    else if (key == KEY_2) {
-        emu_chip.key[0x2] = 1;
-    }
-    else if (key == KEY_3) {
-        emu_chip.key[0x3] = 1;
-    }
-    else if (key == KEY_4) {
-        emu_chip.key[0x4] = 1;
-    }
-    else if (key == KEY_5) {
-        emu_chip.key[0x5] = 1;
-    }
-    else if (key == KEY_6) {
-        emu_chip.key[0x6] = 1;
-    }
-    else if (key == KEY_7) {
-        emu_chip.key[0x7] = 1;
-    }
-    else if (key == KEY_8) {
-        emu_chip.key[0x8] = 1;
-    }
-    else if (key == KEY_9) {
-        emu_chip.key[0x9] = 1;
-    }
-    else if (key == KEY_A) {
-        emu_chip.key[0xA] = 1;
-    }
-    else if (key == KEY_B) {
-        emu_chip.key[0xB] = 1;
-    }
-    else if (key == KEY_C) {
-        emu_chip.key[0xC] = 1;
-    }
-    else if (key == KEY_D) {
-        emu_chip.key[0xD] = 1;
-    }
-    else if (key == KEY_E) {
-        emu_chip.key[0xE] = 1;
-    }
-    else if (key == KEY_F) {
-        emu_chip.key[0xF] = 1;
-    }
+    else if (key == 'q')    { emu_chip.key[0x4] = 1; }
+    else if (key == 'w')    { emu_chip.key[0x5] = 1; }
+    else if (key == 'e')    { emu_chip.key[0x6] = 1; }
+    else if (key == 'r')    { emu_chip.key[0xD] = 1; }
+
+    else if (key == 'a')    { emu_chip.key[0x7] = 1; }
+    else if (key == 's')    { emu_chip.key[0x8] = 1; }
+    else if (key == 'd')    { emu_chip.key[0x9] = 1; }
+    else if (key == 'f')    { emu_chip.key[0xE] = 1; }
+
+    else if (key == 'z')    { emu_chip.key[0xA] = 1; }
+    else if (key == 'x')    { emu_chip.key[0x0] = 1; }
+    else if (key == 'c')    { emu_chip.key[0xB] = 1; }
+    else if (key == 'v')    { emu_chip.key[0xF] = 1; }
 }
 
 // unset the keys when the key is released
 void keyboardUp(unsigned char key, int x, int y)
 {
-    if (key == KEY_0) {
-        emu_chip.key[0x0] = 0;
-    }
-    else if (key == KEY_1) {
-        emu_chip.key[0x1] = 0;
-    }
-    else if (key == KEY_2) {
-        emu_chip.key[0x2] = 0;
-    }
-    else if (key == KEY_3) {
-        emu_chip.key[0x3] = 0;
-    }
-    else if (key == KEY_4) {
-        emu_chip.key[0x4] = 0;
-    }
-    else if (key == KEY_5) {
-        emu_chip.key[0x5] = 0;
-    }
-    else if (key == KEY_6) {
-        emu_chip.key[0x6] = 0;
-    }
-    else if (key == KEY_7) {
-        emu_chip.key[0x7] = 0;
-    }
-    else if (key == KEY_8) {
-        emu_chip.key[0x8] = 0;
-    }
-    else if (key == KEY_9) {
-        emu_chip.key[0x9] = 0;
-    }
-    else if (key == KEY_A) {
-        emu_chip.key[0xA] = 0;
-    }
-    else if (key == KEY_B) {
-        emu_chip.key[0xB] = 0;
-    }
-    else if (key == KEY_C) {
-        emu_chip.key[0xC] = 0;
-    }
-    else if (key == KEY_D) {
-        emu_chip.key[0xD] = 0;
-    }
-    else if (key == KEY_E) {
-        emu_chip.key[0xE] = 0;
-    }
-    else if (key == KEY_F) {
-        emu_chip.key[0xF] = 0;
-    }
+    if (key == '1') { emu_chip.key[0x1] = 0; }
+    else if (key == '2') { emu_chip.key[0x2] = 0; }
+    else if (key == '3') { emu_chip.key[0x3] = 0; }
+    else if (key == '4') { emu_chip.key[0xC] = 0; }
+
+    else if (key == 'q') { emu_chip.key[0x4] = 0; }
+    else if (key == 'w') { emu_chip.key[0x5] = 0; }
+    else if (key == 'e') { emu_chip.key[0x6] = 0; }
+    else if (key == 'r') { emu_chip.key[0xD] = 0; }
+
+    else if (key == 'a') { emu_chip.key[0x7] = 0; }
+    else if (key == 's') { emu_chip.key[0x8] = 0; }
+    else if (key == 'd') { emu_chip.key[0x9] = 0; }
+    else if (key == 'f') { emu_chip.key[0xE] = 0; }
+
+    else if (key == 'z') { emu_chip.key[0xA] = 0; }
+    else if (key == 'x') { emu_chip.key[0x0] = 0; }
+    else if (key == 'c') { emu_chip.key[0xB] = 0; }
+    else if (key == 'v') { emu_chip.key[0xF] = 0; }
 }
 
 

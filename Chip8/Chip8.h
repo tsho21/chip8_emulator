@@ -4,30 +4,6 @@
 
 #include "Common.h"
 
-// keypad (hex-based), 0 - F | 16 total keys as shown below (left side of standard keyboard)
-//	1	49		2	50		3	51		4	52
-//	q	81		w	87		e	69		r	82
-//	a	65		s	83		d	68		f	70
-//	z	90		x	88		c	67		v	86
-//
-//	x = key '0'
-#define KEY_1	49
-#define KEY_2	50
-#define	KEY_3	51
-#define KEY_4	52
-#define KEY_5	113
-#define KEY_6	119
-#define KEY_7	101
-#define KEY_8	114
-#define KEY_9	97
-#define KEY_A	115
-#define KEY_B	100
-#define KEY_C	102
-#define KEY_D	122
-#define KEY_0	120
-#define KEY_E	99
-#define KEY_F	118
-
 #define GFX_WIDTH 64
 #define GFX_HEIGHT 32
 #define GFX_SIZE ((GFX_WIDTH) * (GFX_HEIGHT))
