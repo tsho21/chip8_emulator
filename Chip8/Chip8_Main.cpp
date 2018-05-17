@@ -34,8 +34,8 @@ void setupGraphics(int argc, char **argv)
 	glutInitWindowPosition(320, 320);
 	glutCreateWindow("Chip8 by Tom S");
 
-    glClearColor(0.0, 0.0, 0.0, 0.0);
-    
+    glClearColor(0.0f, 0.0f, 0.5f, 0.0f);
+
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
     gluOrtho2D(0.0, display_width, display_height, 0.0); // this is projecting down the Y access

@@ -323,7 +323,7 @@ void chip8::debug_fmt_msg(char formatted_message[], T object)
 
 // opcode 0x00E0 -> Clears the screen
 bool chip8::opcode_0x00E0(uint16 opcode) {
-    memset(gfx, 0, sizeof(uint8) * (GFX_WIDTH * GFX_HEIGHT));
+    memset(gfx, 0, sizeof(uint8) * GFX_SIZE);
 	drawFlag = true;
 	pc += 2;
 	return true; 
@@ -459,10 +459,10 @@ bool chip8::opcode_0x8XY5(uint16 opcode) {
 	// it is easier than above to figure out if we'll need to borrow
 	//  we just need to determine if VY is bigger than VX - if it is, VX will go below 0 and need to borrow
 	if (V[(opcode & 0x00F0) >> 4] > V[(opcode & 0x0F00) >> 8]) {
-		V[0xF] = 1;  // set borrow flag
+		V[0xF] = 0;  // set borrow flag
 	}
 	else {
-		V[0xF] = 0;
+		V[0xF] = 1;
 	}
 	V[(opcode & 0x0F00) >> 8] -= V[(opcode & 0x00F0) >> 4];    // now do the subtraction
 	pc += 2;
