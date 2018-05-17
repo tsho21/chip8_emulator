@@ -469,13 +469,21 @@ bool chip8::opcode_0x8XY5(uint16 opcode) {
 	return true; 
 }
 
-// opcode 0x8XY6 -> Shifts VY right by one and copies the result to VX. 
-//					VF is set to the value of the least significant bit of VY before the shift
+//// opcode 0x8XY6 -> Shifts VY right by one and copies the result to VX. 
+////					VF is set to the value of the least significant bit of VY before the shift
+//bool chip8::opcode_0x8XY6(uint16 opcode) {
+//	V[0xF] = V[(opcode & 0x00F0) >> 4] & 0x01;
+//	V[(opcode & 0x0F00) >> 8] = (V[(opcode & 0x00F0) >> 4] >>= 1);
+//	pc += 2;
+//	return true; 
+//}
+
+// opcode 0x8XY6 -> (MODERN) -> Shift VX right by one. Set VF to LSB of VX before the shift. Ignore VY.
 bool chip8::opcode_0x8XY6(uint16 opcode) {
-	V[0xF] = V[(opcode & 0x00F0) >> 4] & 0x01;
-	V[(opcode & 0x0F00) >> 8] = (V[(opcode & 0x00F0) >> 4] >>= 1);
-	pc += 2;
-	return true; 
+    V[0xF] = V[(opcode & 0x0F00) >> 8] & 0x1;
+    V[(opcode & 0x0F00) >> 8] >>= 1;
+    pc += 2;
+    return true; 
 }
 
 // opcode 0x8XY7 -> Sets VX to VY minus VX. VF is set to 0 when there's a borrow, and 1 when there isn't.
