@@ -2,6 +2,8 @@
 #ifndef _CHIP8_H
 #define _CHIP8_H
 
+#define _MODERN_CHIP8
+
 #include "Common.h"
 
 #define GFX_WIDTH 64

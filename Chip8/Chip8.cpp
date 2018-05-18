@@ -469,19 +469,30 @@ bool chip8::opcode_0x8XY5(uint16 opcode) {
 	return true; 
 }
 
-// opcode 0x8XY6 -> (MODERN) -> Shift VX right by one. Set VF to LSB of VX before the shift. Ignore VY.
+// opcode 0x8XY6 -> Two intepretations based on modern and older interpreters
+//                  Implementation can be set with _MODERN_CHIP8 setting
 bool chip8::opcode_0x8XY6(uint16 opcode) {
+#ifdef _MODERN_CHIP8
+// (MODERN) -> Shift VX right by one. Set VF to LSB of VX before the shift. Ignore VY.
     V[0xF] = V[(opcode & 0x0F00) >> 8] & 0x1;
     V[(opcode & 0x0F00) >> 8] >>= 1;
     pc += 2;
     return true; 
+#else
+// Shifts VY right by one and copies the result to VX. 
+// VF is set to the value of the least significant bit of VY before the shift
+    V[0xF] = V[(opcode & 0x00F0) >> 4] & 0x01;
+    V[(opcode & 0x0F00) >> 8] = (V[(opcode & 0x00F0) >> 4] >>= 1);
+    pc += 2;
+    return true;
+#endif
 }
 
 // opcode 0x8XY7 -> Sets VX to VY minus VX. VF is set to 0 when there's a borrow, and 1 when there isn't.
 bool chip8::opcode_0x8XY7(uint16 opcode) {
 	// if we're subtracting VX from VY, if VX is larger than VY, there will be a borrow
 	if (V[(opcode & 0x0F00) >> 8] > V[(opcode & 0x00F0) >> 4]) {
-		V[0xF] = 0;
+		V[0xF] = 0;  // set borrow flag
 	}
 	else {
 		V[0xF] = 1;
@@ -491,13 +502,23 @@ bool chip8::opcode_0x8XY7(uint16 opcode) {
 	return true; 
 }
 
-// opcode 0x8XYE -> Shifts VY left by one and copies the result to VX. 
-//					VF is set to the value of the most significant bit of VY before the shift
+// opcode 0x8XYE ->  Two intepretations based on modern and older interpreters
+//                   Implementation can be set with _MODERN_CHIP8 setting
 bool chip8::opcode_0x8XYE(uint16 opcode) {
-	V[0xF] = V[(opcode & 0x00F0) >> 4] & 0x80;   // msb = 0b10000000 = 0x80
-	V[(opcode & 0x0F00) >> 8] = (V[(opcode & 0x00F0) >> 4] <<= 1);
-	pc += 2;
-	return true; 
+#ifdef _MODERN_CHIP8
+// (MODERN) -> Shift VX left by one. Set VF to MSB of VX before the shift. Ignore VY.
+    V[0xF] = V[(opcode & 0x0F00) >> 8] >> 7;
+    V[(opcode & 0x0F00) >> 8] <<= 1;
+    pc += 2;
+    return true;
+#else
+//    Shifts VY left by one and copies the result to VX.
+//	  VF is set to the value of the most significant bit of VY before the shift
+    V[0xF] = V[(opcode & 0x00F0) >> 4] & 0x80;   // msb = 0b10000000 = 0x80
+    V[(opcode & 0x0F00) >> 8] = (V[(opcode & 0x00F0) >> 4] <<= 1);
+    pc += 2;
+    return true;
+#endif
 }
 
 // opcode 0x9XY0 -> Skips the next instruction if VX doesn't equal VY.
