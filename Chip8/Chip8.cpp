@@ -720,19 +720,12 @@ bool chip8::opcode_0xFX29(uint16 opcode) {
 //                    place the hundreds digit in memory at location in I, the tens digit at location I+1, 
 //                    and the ones digit at location I+2.)
 bool chip8::opcode_0xFX33(uint16 opcode) {
-	uint16 bin_val = V[(opcode & 0x0F00) >> 8];
-	uint16 dec_val = 0;
-	for (int i = 0; i < 8; ++i) {
-		if (bin_val & 0x00000001) {
-			dec_val += 2 ^ i;
-		}
-		bin_val >>= 1;
-	}
+	uint8 val = V[(opcode & 0x0F00) >> 8];
 
 	// break dec_val down to the decimal places
-	memory[I] = dec_val / 100;
-	memory[I + 1] = (dec_val / 10) % 10;
-	memory[I + 2] = (dec_val % 100) / 10;
+	memory[I] = val / 100;
+	memory[I + 1] = (val / 10) % 10;
+	memory[I + 2] = (val % 100) / 10;
 	pc += 2;
 	return true; 
 }
