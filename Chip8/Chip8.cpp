@@ -605,7 +605,7 @@ bool chip8::opcode_0xDXYN(uint16 opcode) {
 
 // opcode 0xEX9E -> Skips the next instruction if the key stored in VX is pressed.
 bool chip8::opcode_0xEX9E(uint16 opcode) {
-	uint16 store_key = V[(opcode & 0x0F00) >> 8];
+	uint8 store_key = V[(opcode & 0x0F00) >> 8];
 	if (store_key <= 0xF) {
 		if (key[store_key] == 1) {
 			pc += 4;
@@ -625,7 +625,7 @@ bool chip8::opcode_0xEX9E(uint16 opcode) {
 
 // opcode 0xEXA1 -> Skips the next instruction if the key stored in VX isn't pressed.
 bool chip8::opcode_0xEXA1(uint16 opcode) {
-	uint16 store_key = V[(opcode & 0x0F00) >> 8];
+	uint8 store_key = V[(opcode & 0x0F00) >> 8];
 	if (store_key <= 0xF) {
 		if (key[store_key] == 0) {
 			pc += 4;
