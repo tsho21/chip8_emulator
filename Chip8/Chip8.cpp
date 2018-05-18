@@ -541,7 +541,7 @@ bool chip8::opcode_0xANNN(uint16 opcode) {
 
 // opcode 0xBNNN -> Jumps to the address NNN plus V0.
 bool chip8::opcode_0xBNNN(uint16 opcode) {
-	pc = V[0x0] + (opcode & 0x0FFF);
+    pc = (opcode & 0x0FFF) + V[0x0];
 	return true; 
 }
 
